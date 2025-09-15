@@ -11,6 +11,8 @@ services:
       - REACT_APP_AUTH_SERVICE_URL=http://localhost:3002
       - REACT_APP_WEBSOCKET_URL=ws://localhost:3001
       - CHOKIDAR_USEPOLLING=true  # Für Hot Reloading in Docker
+      - WATCHPACK_POLLING=true    # Alternative für webpack watching
+      - FAST_REFRESH=true         # React Fast Refresh aktivieren
     volumes:
       - ./frontend:/app          # Mount des lokalen Codes
       - /app/node_modules        # Node Modules im Container
