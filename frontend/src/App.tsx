@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import GamePage from "./pages/GamePage";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/home-page/HomePage";
+import GamePage from "./pages/game-page/GamePage";
 
 export default function App() {
   return (
