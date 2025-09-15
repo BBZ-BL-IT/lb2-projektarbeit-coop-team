@@ -9,3 +9,15 @@ Then run the following command to start the development server:
 ```bash
 docker-compose up --build
 ```
+
+## Recommended dev workflow by using console
+
+Start (To run container in background and regain terminal without seeing logs of running session)
+```bash
+docker-compose up -d --build
+```
+
+Stop (Stops container -> Not the same as stopping container with ctrl + c when using default command)
+```bash
+docker-compose down
+```
