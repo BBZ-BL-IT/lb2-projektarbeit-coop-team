@@ -1,3 +1,8 @@
 export default function HomePage() {
-  return <div>Welcome to Homepage</div>;
+  return (
+    <div>
+      <h1>Home-Page</h1>
+      <p>Welcome to our Memory Game</p>
+    </div>
+  );
 }
