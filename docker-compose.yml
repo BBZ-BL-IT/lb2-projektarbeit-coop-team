@@ -1,0 +1,164 @@
+services:
+  # Frontend Webserver
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_GAME_SERVICE_URL=http://localhost:3001
+      - REACT_APP_AUTH_SERVICE_URL=http://localhost:3002
+      - REACT_APP_WEBSOCKET_URL=ws://localhost:3001
+    depends_on:
+      - game-service
+      - auth-service
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # Game Service (selbst programmiert)
+  game-service:
+    build:
+      context: ./backend/game-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - AUTH_SERVICE_URL=http://auth-service:3002
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+    depends_on:
+      - mqtt-broker
+      - auth-service
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # Stats Service (selbst programmiert)
+  stats-service:
+    build:
+      context: ./backend/stats-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
+      - AUTH_SERVICE_URL=http://auth-service:3002
+    depends_on:
+      - mqtt-broker
+      - postgres-db
+      - auth-service
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # Logging Service (selbst programmiert)
+  logging-service:
+    build:
+      context: ./backend/logging-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - LOG_DIRECTORY=/app/logs
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - mqtt-broker
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # Authentication Service (externes Image)
+  auth-service:
+    image: zix99/simple-auth:latest
+    ports:
+      - "3002:80"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+      - JWT_EXPIRY=24h
+      - BCRYPT_ROUNDS=12
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # PostgreSQL Database (externes Image)
+  postgres-db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=memory_game_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-memorydb123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d memory_game_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # MQTT Broker (externes Image)
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0-openssl
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+      - mqtt_logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
+  # Optional: Adminer für Datenbank-Administration
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres-db
+    depends_on:
+      - postgres-db
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  memory-game-network:
+    driver: bridge
+    name: memory-game-network
+
+volumes:
+  postgres_data:
+    name: memory_game_postgres_data
+  mqtt_data:
+    name: memory_game_mqtt_data
+  mqtt_logs:
+    name: memory_game_mqtt_logs
