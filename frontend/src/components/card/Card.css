@@ -1,6 +1,32 @@
-.card-container {
+/* Grundcontainer der Karte */
+.card {
     width: 180px;
     height: 180px;
+    perspective: 1000px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-6px) scale(1.02);
+}
+
+/* Enthält Vorder- und Rückseite, wird für die Drehung genutzt */
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+}
+
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+/* Grundstil für Vorder- und Rückseite */
+.card-face {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10,56 +36,65 @@
     background: #ffffff;
     box-shadow: rgba(50, 50, 93, 0.1) 0px 6px 12px -2px,
     rgba(0, 0, 0, 0.1) 0 3px 7px -3px;
-    transition: transform 0.2s ease, box-shadow 0.3s ease, border 0.3s ease;
-    position: relative;
+    backface-visibility: hidden;
 }
 
-.card-container::before {
+/* Animierter Rahmen-Effekt */
+.card-face::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 4px;
+    padding: 3px;
     background: linear-gradient(135deg, #ff6ec4, #7873f5, #00ff2b);
     background-size: 200% 200%;
     opacity: 0;
     transition: opacity 0.3s ease;
     animation: borderShift 3s linear infinite;
-
     -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
     -webkit-mask-origin: content-box, border-box;
     -webkit-mask-clip: content-box, border-box;
     -webkit-mask-repeat: no-repeat, no-repeat;
-
     mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
     mask-origin: content-box, border-box;
     mask-clip: content-box, border-box;
     mask-repeat: no-repeat, no-repeat;
-
     -webkit-mask-composite: xor;
     mask-composite: exclude;
 }
 
-.card-container:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: rgba(154, 154, 154, 0.25) 0px 12px 24px -2px,
-    rgba(104, 104, 104, 0.2) 0px 6px 12px -3px;
-}
-
-.card-container:hover::before {
+.card:hover .card-face::before {
     opacity: 1;
 }
 
-@keyframes borderShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Vorderseite der Karte */
+.card-front {
+    transform: rotateY(0deg);
 }
 
-.card-container img {
+/* Rückseite der Karte */
+.card-back {
+    transform: rotateY(180deg);
+}
+
+/* Bilder in der Karte */
+.card-face img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
     display: block;
     z-index: 1;
+}
+
+/* Animation für den Farbverlauf-Rahmen */
+@keyframes borderShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
