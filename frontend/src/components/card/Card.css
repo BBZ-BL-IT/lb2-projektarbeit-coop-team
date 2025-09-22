@@ -6,16 +6,54 @@
     justify-content: center;
     overflow: hidden;
     border-radius: 1.5rem;
-    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px,
-    rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    border: 2px solid #ffffff;
+    background: #ffffff;
+    box-shadow: rgba(50, 50, 93, 0.1) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.1) 0 3px 7px -3px;
+    transition: transform 0.2s ease, box-shadow 0.3s ease, border 0.3s ease;
+    position: relative;
+}
 
+.card-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 4px;
+    background: linear-gradient(135deg, #ff6ec4, #7873f5, #00ff2b);
+    background-size: 200% 200%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    animation: borderShift 3s linear infinite;
 
-    transition: transform 0.17s ease, box-shadow 0.3s ease;
+    -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    -webkit-mask-origin: content-box, border-box;
+    -webkit-mask-clip: content-box, border-box;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-origin: content-box, border-box;
+    mask-clip: content-box, border-box;
+    mask-repeat: no-repeat, no-repeat;
+
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
 }
 
 .card-container:hover {
-    transform: translateY(-5px);
-    box-shadow: rgba(154, 154, 154, 0.35) 0px 12px 24px -2px, rgb(104, 104, 104) 0px 6px 12px -3px;
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: rgba(154, 154, 154, 0.25) 0px 12px 24px -2px,
+    rgba(104, 104, 104, 0.2) 0px 6px 12px -3px;
+}
+
+.card-container:hover::before {
+    opacity: 1;
+}
+
+@keyframes borderShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .card-container img {
@@ -23,6 +61,5 @@
     max-height: 100%;
     object-fit: contain;
     display: block;
+    z-index: 1;
 }
-
-
