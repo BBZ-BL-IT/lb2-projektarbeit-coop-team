@@ -1,7 +1,13 @@
-export default function Card() {
-    return(
-        <div>
+import "./Card.css";
 
-        </div>
+export default function Card() {
+    const relaxo = '/pokemon-image/Relaxo.png'
+
+
+    return (
+
+            <div className="card-container">
+                <img src={relaxo}/>
+            </div>
     );
 }
