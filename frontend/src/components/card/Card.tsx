@@ -3,6 +3,7 @@ import "./Card.css";
 
 export default function Card() {
     const relaxo = "/pokemon-image/Relaxo.png";
+    const charmander = "/pokemon-image/Mewtwo.webp";
     const [isFlipped, setIsFlipped] = useState(false);
 
     return (
@@ -10,7 +11,7 @@ export default function Card() {
                 <div className="card-inner">
                     <div className="card-face card-front"></div>
                     <div className="card-face card-back">
-                        <img src={relaxo} alt="Relaxo"/>
+                        <img src={charmander} alt="Relaxo" draggable="false"/>
                     </div>
                 </div>
             </div>
