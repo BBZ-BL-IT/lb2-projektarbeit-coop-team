@@ -6,13 +6,13 @@ export default function Card() {
     const [isFlipped, setIsFlipped] = useState(false);
 
     return (
-        <div className={`card ${isFlipped ? "flipped" : ""}`} onClick={() => setIsFlipped((!isFlipped))}>
-            <div className="card-inner">
-                <div className="card-face card-front"></div>
-                <div className="card-face card-back">
-                    <img src={relaxo} alt="Relaxo"/>
+            <div className={`card ${isFlipped ? "flipped" : ""}`} onClick={() => setIsFlipped((!isFlipped))}>
+                <div className="card-inner">
+                    <div className="card-face card-front"></div>
+                    <div className="card-face card-back">
+                        <img src={relaxo} alt="Relaxo"/>
+                    </div>
                 </div>
             </div>
-        </div>
     );
 }

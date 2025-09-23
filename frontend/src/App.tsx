@@ -3,6 +3,7 @@ import "./App.css";
 import HomePage from "./pages/home-page/HomePage";
 import GamePage from "./pages/game-page/GamePage";
 import Navbar from "./components/navbar/Navbar";
+import Footer from "./components/footer/Footer";
 
 export default function App() {
   return (

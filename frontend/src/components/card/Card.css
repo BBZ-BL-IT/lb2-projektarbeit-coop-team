@@ -1,7 +1,7 @@
 /* Grundcontainer der Karte */
 .card {
-    width: 180px;
-    height: 180px;
+    width: 150px;
+    height: 150px;
     perspective: 1000px;
     transition: transform 0.2s ease;
 }
