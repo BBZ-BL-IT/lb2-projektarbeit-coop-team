@@ -33,15 +33,21 @@ Then run the following command to start the development server:
 docker-compose up --build
 ```
 
+## Available Ports
+
+After starting the application, the following services will be available:
+
+- **Frontend (React App)**: http://localhost:3000
+- **Game Service**: http://localhost:8001
+- **Authentication Service**: http://localhost:8002
+- **Stats Service**: http://localhost:8003
+- **Logs Service**: http://localhost:8004
+- **Database Administration (Adminer)**: http://localhost:8080
+- **PostgreSQL Database**: localhost:5432
+
 ## Database Administration
 
-You can access Adminer (database administration) at `http://localhost:8080`
-
-For convenience, use this direct link with pre-filled connection details:
-
-```
-http://localhost:8080/?pgsql=postgres-db&username=postgres&db=memory_game_db
-```
+You can access Adminer (database administration) at http://localhost:8080/?pgsql=postgres-db&username=postgres&db=memory_game_db
 
 Just enter your password and click "Login".
 
