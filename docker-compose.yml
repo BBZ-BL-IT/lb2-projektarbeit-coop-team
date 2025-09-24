@@ -56,10 +56,9 @@ services:
     ports:
       - "8002:80"
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
-      - JWT_EXPIRY=24h
-      - BCRYPT_ROUNDS=12
+      - SA_WEB_LOGIN_COOKIE_JWT_SIGNINGKEY=${JWT_SECRET:-your-super-secret-jwt-key}
+      - SA_DB_DRIVER=postgres
+      - SA_DB_URL=host=postgres-db user=postgres dbname=memory_game_db password=${POSTGRES_PASSWORD:-memorydb123} sslmode=disable
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
     depends_on:
       postgres-db:
