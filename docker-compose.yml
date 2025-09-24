@@ -33,12 +33,15 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - PORT=8001
 #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
       - AUTH_SERVICE_URL=http://auth-service:8002
 #      - STATS_SERVICE_URL=http://stats-service:8003
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+    volumes:
+      - ./backend/game-service:/app  # Mount source code for hot reloading
+      - /app/node_modules  # Exclude node_modules from volume mount
     depends_on:
 #      - mqtt-broker
       - auth-service
