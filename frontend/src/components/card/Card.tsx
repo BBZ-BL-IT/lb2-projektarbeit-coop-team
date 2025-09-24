@@ -1,9 +1,12 @@
 import {useState} from "react";
 import "./Card.css";
 
-export default function Card() {
-    const relaxo = "/pokemon-image/Relaxo.png";
-    const charmander = "/pokemon-image/Mewtwo.webp";
+interface CardProps {
+    imageUrl: string;
+    altText?: string;
+}
+
+export default function Card({ imageUrl, altText = "Pokemon" }: CardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
 
     return (
@@ -11,7 +14,7 @@ export default function Card() {
                 <div className="card-inner">
                     <div className="card-face card-front"></div>
                     <div className="card-face card-back">
-                        <img src={charmander} alt="Relaxo" draggable="false"/>
+                        <img src={imageUrl} alt={altText} draggable="false"/>
                     </div>
                 </div>
             </div>
