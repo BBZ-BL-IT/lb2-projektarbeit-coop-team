@@ -1,5 +1,5 @@
 services:
-  # Frontend Webserver
+  # Frontend Webserver - runs on port 3000
   frontend:
     build:
       context: ./frontend
@@ -7,85 +7,51 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_GAME_SERVICE_URL=http://localhost:3001
-      - REACT_APP_AUTH_SERVICE_URL=http://localhost:3002
-      - REACT_APP_WEBSOCKET_URL=ws://localhost:3001
-      - CHOKIDAR_USEPOLLING=true  # For hot reloading in Docker
-      - WATCHPACK_POLLING=true    # Alternative for webpack watching
-      - FAST_REFRESH=true         # Enable React Fast Refresh
+      - REACT_APP_GAME_SERVICE_URL=http://localhost:8001
+      - REACT_APP_AUTH_SERVICE_URL=http://localhost:8002
+#      - REACT_APP_STATS_SERVICE_URL=http://localhost:8003
+      - REACT_APP_WEBSOCKET_URL=ws://localhost:8001
+      - CHOKIDAR_USEPOLLING=true # For hot reloading in Docker
+      - WATCHPACK_POLLING=true # Alternative for webpack watching
+      - FAST_REFRESH=true # Enable React Fast Refresh
     volumes:
-      - ./frontend:/app          # Mount local code
-      - /app/node_modules        # Node modules inside container
+      - ./frontend:/app # Mount local code
+      - /app/node_modules # Node modules inside container
     depends_on:
-      #      - game-service
+      - game-service
       - auth-service
+#      - stats-service
     networks:
       - memory-game-network
     restart: unless-stopped
 
-  #  # Game Service (custom)
-  #  game-service:
-  #    build:
-  #      context: ./backend/game-service
-  #      dockerfile: Dockerfile
-  #    ports:
-  #      - "3001:3001"
-  #    environment:
-  #      - NODE_ENV=production
-  #      - PORT=3001
-  #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
-  #      - AUTH_SERVICE_URL=http://auth-service:3002
-  #      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
-  #    depends_on:
-  #      - mqtt-broker
-  #      - auth-service
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
-  #
-  #  # Stats Service (custom)
-  #  stats-service:
-  #    build:
-  #      context: ./backend/stats-service
-  #      dockerfile: Dockerfile
-  #    ports:
-  #      - "3003:3003"
-  #    environment:
-  #      - NODE_ENV=production
-  #      - PORT=3003
-  #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
-  #      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
-  #      - AUTH_SERVICE_URL=http://auth-service:3002
-  #    depends_on:
-  #      - mqtt-broker
-  #      - postgres-db
-  #      - auth-service
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
-  #
-  #  # Logging Service (custom)
-  #  logging-service:
-  #    build:
-  #      context: ./backend/logging-service
-  #      dockerfile: Dockerfile
-  #    environment:
-  #      - NODE_ENV=production
-  #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
-  #      - LOG_DIRECTORY=/app/logs
-  #    volumes:
-  #      - ./logs:/app/logs
-  #    depends_on:
-  #      - mqtt-broker
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
+  # Game Service - runs on port 8001
+  game-service:
+    build:
+      context: ./backend/game-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - NODE_ENV=production
+      - PORT=8001
+#      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - AUTH_SERVICE_URL=http://auth-service:8002
+#      - STATS_SERVICE_URL=http://stats-service:8003
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+    depends_on:
+#      - mqtt-broker
+      - auth-service
+      - postgres-db
+    networks:
+      - memory-game-network
+    restart: unless-stopped
 
-  # Authentication Service (external image)
+  # Authentication Service - runs on port 8002
   auth-service:
     image: zix99/simple-auth:latest
     ports:
-      - "3002:80"
+      - "8002:80"
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
@@ -99,7 +65,7 @@ services:
       - memory-game-network
     restart: unless-stopped
 
-  # PostgreSQL Database (external image)
+  # PostgreSQL Database - runs on port 5432
   postgres-db:
     image: postgres:15-alpine
     ports:
@@ -121,27 +87,7 @@ services:
       - memory-game-network
     restart: unless-stopped
 
-  # MQTT Broker (external image)
-  #  mqtt-broker:
-  #    image: eclipse-mosquitto:2.0-openssl
-  #    ports:
-  #      - "1883:1883"
-  #      - "9001:9001"
-  #    volumes:
-  #      - ./mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
-  #      - mqtt_data:/mosquitto/data
-  #      - mqtt_logs:/mosquitto/log
-  #    healthcheck:
-  #      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1"]
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 3
-  #      start_period: 30s
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
-
-  # Optional: Adminer for database administration
+  # Adminer for Database Administration - runs on port 8080
   adminer:
     image: adminer:latest
     ports:
@@ -155,6 +101,69 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+
+
+#  # Stats Service - runs on port 8003
+#  stats-service:
+#    build:
+#      context: ./backend/stats-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8003:8003"
+#    environment:
+#      - NODE_ENV=production
+#      - PORT=8003
+#      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+#      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
+#      - AUTH_SERVICE_URL=http://auth-service:8002
+#      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+#    depends_on:
+#      - mqtt-broker
+#      - postgres-db
+#      - auth-service
+#    networks:
+#      - memory-game-network
+#    restart: unless-stopped
+#
+#  # Logging Service - runs on port 8004
+#  logging-service:
+#    build:
+#      context: ./backend/logging-service
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8004:8004"
+#    environment:
+#      - NODE_ENV=production
+#      - PORT=8004
+#      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+#      - LOG_DIRECTORY=/app/logs
+#    volumes:
+#      - ./logs:/app/logs
+#    depends_on:
+#      - mqtt-broker
+#    networks:
+#      - memory-game-network
+#    restart: unless-stopped
+#
+#  # MQTT Broker - runs on port 1883 (MQTT) and 9001 (WebSocket)
+#  mqtt-broker:
+#    image: eclipse-mosquitto:2.0-openssl
+#    ports:
+#      - "1883:1883"  # MQTT Port
+#      - "9001:9001"  # WebSocket Port
+#    volumes:
+#      - ./mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+#      - mqtt_data:/mosquitto/data
+#      - mqtt_logs:/mosquitto/log
+#    healthcheck:
+#      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 30s
+#    networks:
+#      - memory-game-network
+#    restart: unless-stopped
 
 networks:
   memory-game-network:
