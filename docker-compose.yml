@@ -102,9 +102,6 @@ services:
     networks:
       - memory-game-network
     restart: unless-stopped
-    profiles:
-      - dev
-
 
 #  # Stats Service - runs on port 8003
 #  stats-service:
