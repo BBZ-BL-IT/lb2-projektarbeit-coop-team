@@ -7,12 +7,12 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-          <div>
+        <div>
           <h1>Memoriq</h1>
-          </div>
-          <div className="sign-in-out-container">
-              <button className="sign-in-out-button">Sign in</button>
-          </div>
+        </div>
+        <div className="sign-in-out-container">
+          <button className="sign-in-out-button">Sign in</button>
+        </div>
       </div>
     </nav>
   );

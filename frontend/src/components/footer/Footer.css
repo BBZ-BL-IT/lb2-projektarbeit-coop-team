@@ -1,23 +1,24 @@
-html, body {
-    margin: 0;
-    height: 100%;
+html,
+body {
+  margin: 0;
+  height: 100%;
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    z-index: 50;
-    padding: 0.5rem 1rem;
-    box-sizing: border-box;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  z-index: 50;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
 }
 
 .footer-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .footer-container h3 {
-    margin: 0;
+  margin: 0;
 }
