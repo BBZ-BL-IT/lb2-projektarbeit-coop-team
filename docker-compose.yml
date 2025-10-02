@@ -60,6 +60,7 @@ services:
       - SA_DB_DRIVER=postgres
       - SA_DB_URL=host=postgres-db user=${POSTGRES_USER} dbname=${POSTGRES_DB} password=${POSTGRES_PASSWORD} sslmode=disable
       - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+      - SA_WEB_LOGIN_SETTINGS_ROUTEONLOGIN=http://localhost:3000
     depends_on:
       postgres-db:
         condition: service_healthy
