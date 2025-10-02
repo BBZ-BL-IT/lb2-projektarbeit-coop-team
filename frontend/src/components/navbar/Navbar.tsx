@@ -10,8 +10,22 @@ export default function Navbar() {
         <div>
           <h1>Memoriq</h1>
         </div>
-        <div className="sign-in-out-container">
-          <button className="sign-in-out-button">Sign in</button>
+        <div className="navbar-button-container">
+          TODO: Conditionally render buttons based on auth state
+          <button
+            className="navbar-button"
+            onClick={() => (window.location.href = "http://localhost:8002")}
+          >
+            Sign In
+          </button>
+          <button
+            className="navbar-button"
+            onClick={() =>
+              (window.location.href = "http://localhost:8002/#/manage")
+            }
+          >
+            Manage Account
+          </button>
         </div>
       </div>
     </nav>
