@@ -1,0 +1,103 @@
+/* Grundcontainer der Karte */
+.card {
+  width: 15vh;
+  height: 5vh;
+  perspective: 1000px;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+/* Enthält Vorder- und Rückseite, wird für die Drehung genutzt */
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Grundstil für Vorder- und Rückseite */
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  box-shadow:
+    rgba(50, 50, 93, 0.1) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.1) 0 3px 7px -3px;
+  backface-visibility: hidden;
+}
+
+/* Animierter Rahmen-Effekt */
+.card-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  background: linear-gradient(135deg, #ff6ec4, #7873f5, #00ff2b);
+  background-size: 200% 200%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: borderShift 3s linear infinite;
+  -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  -webkit-mask-origin: content-box, border-box;
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-origin: content-box, border-box;
+  mask-clip: content-box, border-box;
+  mask-repeat: no-repeat, no-repeat;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.card:hover .card-face::before {
+  opacity: 1;
+}
+
+/* Vorderseite der Karte */
+.card-front {
+  transform: rotateY(0deg);
+}
+
+/* Rückseite der Karte */
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* Bilder in der Karte */
+.card-face img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 1;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Animation für den Farbverlauf-Rahmen */
+@keyframes borderShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

@@ -1,5 +1,6 @@
 // Dummy Object Example
 export const userStatsMock = {
+  userName: "Kiwii",
   wins: 10,
   losses: 5,
   draws: 2,
