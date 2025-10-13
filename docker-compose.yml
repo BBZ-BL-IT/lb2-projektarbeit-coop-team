@@ -35,7 +35,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8001
-#      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
       - AUTH_SERVICE_URL=http://auth-service:8002
 #      - STATS_SERVICE_URL=http://stats-service:8003
       - JWT_SECRET=${JWT_SECRET}
@@ -43,7 +43,7 @@ services:
       - ./backend/game-service:/app  # Mount source code for hot reloading
       - /app/node_modules  # Exclude node_modules from volume mount
     depends_on:
-#      - mqtt-broker
+      - mqtt-broker
       - auth-service
       - postgres-db
     networks:
@@ -147,25 +147,25 @@ services:
 #      - memory-game-network
 #    restart: unless-stopped
 #
-#  # MQTT Broker - runs on port 1883 (MQTT) and 9001 (WebSocket)
-#  mqtt-broker:
-#    image: eclipse-mosquitto:2.0-openssl
-#    ports:
-#      - "1883:1883"  # MQTT Port
-#      - "9001:9001"  # WebSocket Port
-#    volumes:
-#      - ./mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
-#      - mqtt_data:/mosquitto/data
-#      - mqtt_logs:/mosquitto/log
-#    healthcheck:
-#      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 30s
-#    networks:
-#      - memory-game-network
-#    restart: unless-stopped
+  # MQTT Broker - runs on port 1883 (MQTT) and 9001 (WebSocket)
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0-openssl
+    ports:
+      - "1883:1883"  # MQTT Port
+      - "9001:9001"  # WebSocket Port
+    volumes:
+      - ./mqtt-config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+      - mqtt_logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -t '$$SYS/broker/uptime' -C 1 -W 5 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - memory-game-network
+    restart: unless-stopped
 
 networks:
   memory-game-network:
