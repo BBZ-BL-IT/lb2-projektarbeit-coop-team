@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import "./Navbar.css";
 
@@ -9,7 +10,9 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-container">
           <div>
-            <h1>Memoriq</h1>
+            <Link to="/" className="navbar-title-link">
+              <h1>Memoriq</h1>
+            </Link>
           </div>
           <div className="navbar-button-container">
             <span>Loading...</span>
@@ -23,7 +26,9 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <div>
-          <h1>Memoriq</h1>
+          <Link to="/" className="navbar-title-link">
+            <h1>Memoriq</h1>
+          </Link>
         </div>
         <div className="navbar-button-container">
           {!isAuthenticated ? (
