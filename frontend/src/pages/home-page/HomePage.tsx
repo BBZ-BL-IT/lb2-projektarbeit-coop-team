@@ -13,8 +13,8 @@ export default function HomePage() {
 
   if (!isAuthenticated) {
     return (
-      <div>
-        <h2>Please sign in to access your profile</h2>
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <h2>Please sign in to access your profile!</h2>
       </div>
     );
   }
