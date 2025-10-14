@@ -38,10 +38,13 @@ function getClient() {
 /**
  * Executes a SQL query with optional parameters.
  * @param {string} sql - The SQL query string. Use $1, $2, etc. as placeholders.
- * @param {(string|number)[]} [params=[]] - Parameters to substitute into the query.
- * @returns {Promise<Object[]>} - Array of result rows.
+ * @param {(string|number|boolean)[]} [params=[]] - Parameters to substitute into the query.
+ * @returns {Promise<any[]>} - Array of result rows.
  */
-export function executeQuery(sql: string, params = []) {
+export function executeQuery(
+  sql: string,
+  params: (string | number | boolean)[] = [],
+): Promise<any[]> {
   return new Promise((resolve, reject) => {
     const dbClient = getClient();
     dbClient.query(sql, params, (err, result) => {

@@ -4,6 +4,13 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { executeQuery } from './db';
 
+// Interface for user account data
+interface UserAccount {
+  uuid: string;
+  name: string;
+  email: string;
+}
+
 const app = express();
 const PORT = 8001;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -106,14 +113,39 @@ app.get('/health', (_req, res) => {
 app.get('/auth', async (req, res) => {
   const auth = (req as any).auth;
 
-  const result = await executeQuery('SELECT NOW()');
+  try {
+    // Get user details from the accounts table using the sub (uuid) value
+    const userResult = await executeQuery(
+      'SELECT uuid, name, email FROM accounts WHERE uuid = $1 AND active = true',
+      [auth.sub as string],
+    );
 
-  res.json({
-    message: 'Welcome to the game service!',
-    user: auth,
-    timestamp: new Date().toISOString(),
-    dbTime: result[0].now,
-  });
+    if (userResult.length === 0) {
+      return res.status(404).json({
+        error: 'User not found',
+        message: 'User account not found or inactive.',
+        statusCode: 404,
+      });
+    }
+
+    const user = userResult[0] as UserAccount;
+
+    res.json({
+      user: {
+        uuid: user.uuid,
+        name: user.name,
+        email: user.email,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Database error while fetching user:', error);
+    res.status(500).json({
+      error: 'Database error',
+      message: 'Failed to fetch user information.',
+      statusCode: 500,
+    });
+  }
 });
 
 app.listen(PORT, () => {
