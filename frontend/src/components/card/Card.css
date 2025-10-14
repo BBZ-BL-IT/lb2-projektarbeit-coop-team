@@ -1,13 +1,23 @@
 /* Grundcontainer der Karte */
 .card {
-  width: 15vh;
-  height: 15vh;
+  width: 10vh;
+  height: 10vh;
   perspective: 1000px;
   transition: transform 0.2s ease;
 }
 
 .card:hover {
   transform: translateY(-6px) scale(1.02);
+}
+
+/* Nicht klickbare Karten (Multiplayer) */
+.card.not-clickable {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.card.not-clickable:hover {
+  transform: none;
 }
 
 /* Enthält Vorder- und Rückseite, wird für die Drehung genutzt */
@@ -87,6 +97,24 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+}
+
+/* Gefundene Karten (Multiplayer) */
+.card-face.matched {
+  box-shadow:
+    0 0 20px rgba(34, 197, 94, 0.4),
+    rgba(50, 50, 93, 0.1) 0px 6px 12px -2px,
+    rgba(0, 0, 0, 0.1) 0 3px 7px -3px;
+}
+
+/* Eigene gefundene Karten */
+.card-face.matched.matched-own {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+}
+
+/* Gegnerische gefundene Karten */
+.card-face.matched.matched-opponent {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
 
 /* Animation für den Farbverlauf-Rahmen */
