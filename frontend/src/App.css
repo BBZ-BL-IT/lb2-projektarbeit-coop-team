@@ -1,3 +1,24 @@
+/* Layout-System für Header, Main und Footer */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main Content Container */
+.main-content {
+  flex: 1;
+  /* Keine Margins mehr nötig da Header/Footer nicht mehr fixed sind */
+}
+
 .App {
   text-align: center;
 }
