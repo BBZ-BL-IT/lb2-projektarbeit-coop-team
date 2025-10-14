@@ -1,20 +1,12 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import jwt from 'jsonwebtoken';
-import { executeQuery } from './db';
-
-// Interface for user account data
-interface UserAccount {
-  uuid: string;
-  name: string;
-  email: string;
-}
+import { authMiddleware } from './middleware/auth';
+import authRouter from './routes/auth';
+import healthRouter from './routes/health';
 
 const app = express();
 const PORT = 8001;
-const JWT_SECRET = process.env.JWT_SECRET;
-const AUTH_URL = 'http://localhost:8002';
 
 // Middlewares
 app.use(
@@ -27,126 +19,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// JWT Authentication middleware
-app.use((req, res, next) => {
-  // Skip auth for health check
-  if (req.path === '/health') {
-    return next();
-  }
+// Apply authentication middleware globally
+app.use(authMiddleware);
 
-  // Try to get token from multiple sources
-  let token: string | null = null;
-
-  // First try Authorization header (Bearer token)
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-    token = req.headers.authorization.substring(7);
-  }
-  // Then try auth cookie
-  else if (req.cookies.auth) {
-    token = req.cookies.auth;
-  }
-  // Finally try raw authorization header
-  else if (req.headers.authorization) {
-    token = req.headers.authorization;
-  }
-
-  if (!token) {
-    console.error('No auth token found - returning 401');
-    return res.status(401).json({
-      error: 'Authentication required',
-      message: 'No auth token found. Please login first.',
-      authUrl: AUTH_URL,
-      statusCode: 401,
-    });
-  }
-
-  if (!JWT_SECRET) {
-    console.error('JWT_SECRET is not configured - server misconfiguration');
-    return res.status(500).json({
-      error: 'Server configuration error',
-      message: 'Authentication service is not properly configured.',
-      statusCode: 500,
-    });
-  }
-
-  // At this point we know both token and JWT_SECRET are defined
-  const tokenToVerify: string = token;
-  const secretToUse: string = JWT_SECRET;
-
-  return jwt.verify(tokenToVerify, secretToUse, (err: any, decoded: any) => {
-    if (err) {
-      console.error('JWT verification failed:', err.message);
-      console.error(
-        'JWT Secret being used:',
-        JWT_SECRET ? JWT_SECRET.substring(0, 10) + '...' : 'undefined',
-      );
-
-      return res.status(401).json({
-        error: 'Invalid authentication token',
-        message: 'Your session has expired or is invalid. Please login again.',
-        details: err.message,
-        authUrl: AUTH_URL,
-        statusCode: 401,
-      });
-    }
-
-    console.log(
-      'JWT verified successfully for user:',
-      decoded.sub || decoded.username || 'unknown',
-    );
-    // Add decoded token to request object for use in routes
-    (req as any).auth = decoded;
-    return next();
-  });
-});
-
-// Health check route (no auth required)
-app.get('/health', (_req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'game-service',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Example protected route
-app.get('/auth', async (req, res) => {
-  const auth = (req as any).auth;
-
-  try {
-    // Get user details from the accounts table using the sub (uuid) value
-    const userResult = await executeQuery(
-      'SELECT uuid, name, email FROM accounts WHERE uuid = $1 AND active = true',
-      [auth.sub as string],
-    );
-
-    if (userResult.length === 0) {
-      return res.status(404).json({
-        error: 'User not found',
-        message: 'User account not found or inactive.',
-        statusCode: 404,
-      });
-    }
-
-    const user = userResult[0] as UserAccount;
-
-    res.json({
-      user: {
-        uuid: user.uuid,
-        name: user.name,
-        email: user.email,
-      },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Database error while fetching user:', error);
-    res.status(500).json({
-      error: 'Database error',
-      message: 'Failed to fetch user information.',
-      statusCode: 500,
-    });
-  }
-});
+// Routes
+app.use(healthRouter);
+app.use(authRouter);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
