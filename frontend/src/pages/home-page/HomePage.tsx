@@ -1,4 +1,3 @@
-import StatsCard from "../../components/stats-card/StatsCard";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function HomePage() {
@@ -22,7 +21,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <StatsCard statsText={user?.name || "User"}></StatsCard>
+      {/* <StatsCard statsText={user?.name || "User"}></StatsCard> */}
       <div style={{ padding: "20px", textAlign: "center" }}>
         <h2>Welcome back, {user?.name}!</h2>
         <p>Email: {user?.email}</p>
