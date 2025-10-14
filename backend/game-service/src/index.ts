@@ -1,12 +1,8 @@
-import dotenv from 'dotenv';
-import path from 'path';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import cookieParser from 'cookie-parser';
-
-// Load environment variables from the project root .env file
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+import { executeQuery } from './db';
 
 const app = express();
 const PORT = 8001;
@@ -107,12 +103,16 @@ app.get('/health', (_req, res) => {
 });
 
 // Example protected route
-app.get('/auth', (req, res) => {
+app.get('/auth', async (req, res) => {
   const auth = (req as any).auth;
+
+  const result = await executeQuery('SELECT NOW()');
+
   res.json({
     message: 'Welcome to the game service!',
     user: auth,
     timestamp: new Date().toISOString(),
+    dbTime: result[0].now,
   });
 });
 
