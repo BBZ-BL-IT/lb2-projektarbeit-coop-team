@@ -1,5 +1,6 @@
 import { Card, Game, GameState, Player } from '../types/game';
 import { pokemons } from '../utils/pokemons';
+import { mqttService } from './MqttService';
 
 export class GameManager {
   private games: Map<string, Game> = new Map();
@@ -34,30 +35,21 @@ export class GameManager {
   joinGame(gameId: string, player: Player): boolean {
     const game = this.games.get(gameId);
 
-    console.log(`Join attempt: gameId=${gameId}, player=${player.name}`);
-    console.log(`Game exists: ${!!game}`);
-
     if (!game) {
-      console.log(`Game ${gameId} not found`);
       return false;
     }
 
-    console.log(`Game status: ${game.status}, players: ${game.players.length}`);
-
     if (game.players.length >= 2) {
-      console.log(`Game ${gameId} is full`);
       return false;
     }
 
     if (game.status !== 'waiting') {
-      console.log(`Game ${gameId} is not in waiting status`);
       return false;
     }
 
     // Prüfe ob Spieler bereits im Spiel ist
     const existingPlayer = game.players.find((p) => p.id === player.id);
     if (existingPlayer) {
-      console.log(`Player ${player.name} is already in game ${gameId}`);
       return true; // Erlaube erneutes Joinen für den gleichen Spieler
     }
 
@@ -65,11 +57,8 @@ export class GameManager {
     game.scores[player.id] = 0;
     this.playerGameMap.set(player.id, gameId);
 
-    console.log(`Player ${player.name} successfully joined game ${gameId}`);
-
     // Wenn 2 Spieler da sind, starte das Spiel
     if (game.players.length === 2) {
-      console.log(`Starting game ${gameId} with 2 players`);
       this.startGame(gameId);
     }
 
@@ -98,6 +87,13 @@ export class GameManager {
     game.currentTurnStartTime = new Date();
 
     game.lastActivity = new Date();
+
+    // MQTT Event: Spiel gestartet
+    mqttService.publishGameStart({
+      matchId: gameId,
+      players: game.players.map((p) => p.email),
+      timestamp: new Date().toISOString(),
+    });
   }
 
   // Karte umdrehen
@@ -160,6 +156,10 @@ export class GameManager {
     const isMatch = card1.pokemonName === card2.pokemonName;
     const currentPlayer = game.players[game.currentPlayerIndex];
 
+    // Berechne die Position der Karten im Array (für MQTT Event)
+    const card1Position = game.cards.findIndex((c) => c.id === cardId1);
+    const card2Position = game.cards.findIndex((c) => c.id === cardId2);
+
     if (isMatch) {
       // Match gefunden
       card1.isMatched = true;
@@ -174,7 +174,8 @@ export class GameManager {
       game.playerFinishTimes[currentPlayer.id] = new Date();
 
       // Spieler darf nochmal (currentPlayerIndex bleibt gleich)
-      // Timer läuft weiter für den gleichen Spieler
+      // Timer läuft weiter für den gleichen Spieler - ABER wir müssen ihn neu starten
+      game.currentTurnStartTime = new Date();
     } else {
       // Kein Match - Karten wieder umdrehen
       card1.isFlipped = false;
@@ -187,15 +188,33 @@ export class GameManager {
       game.currentTurnStartTime = new Date();
     }
 
+    // MQTT Event: Spielzug
+    const remainingPairs = Math.floor(game.cards.filter((c) => !c.isMatched).length / 2);
+    mqttService.publishGameMove({
+      matchId: gameId,
+      player: currentPlayer.email,
+      flippedCard1: card1Position,
+      flippedCard2: card2Position,
+      match: isMatch,
+      remainingPairs: remainingPairs,
+      timestamp: new Date().toISOString(),
+    });
+
     game.flippedCards = [];
     game.isProcessingMatch = false; // Match-Verarbeitung beendet
 
     // Prüfe ob Spiel beendet ist
     const allMatched = game.cards.every((card) => card.isMatched);
     if (allMatched) {
+      // Finale Zeit-Aktualisierung für den aktuellen Spieler
+      this.updateCurrentPlayerTime(game);
+
       game.status = 'finished';
       game.finishTime = new Date();
       game.winner = this.determineWinner(game);
+
+      // MQTT Event: Spiel beendet
+      this.publishGameEndEvent(game);
     }
 
     game.lastActivity = new Date();
@@ -295,7 +314,46 @@ export class GameManager {
     });
 
     // Mische die Karten
-    return cards.sort(() => Math.random() - 0.5);
+    const shuffledCards = cards.sort(() => Math.random() - 0.5);
+
+    // DEBUG: Zeige die Memory-Lösung in der Konsole (nur für Development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n----------------------------------------');
+      console.log('🎯 MEMORY GAME SOLUTION (Dev Mode):');
+
+      // Erstelle eine Map um Paare zu finden und nummeriere sie
+      const pairMap = new Map<string, number>();
+      let pairNumber = 1;
+
+      // Gehe durch alle Karten und weise jedem Pokemon eine Nummer zu
+      shuffledCards.forEach((card) => {
+        if (!pairMap.has(card.pokemonName)) {
+          pairMap.set(card.pokemonName, pairNumber);
+          pairNumber++;
+        }
+      });
+
+      // Erstelle das 4x4 Grid mit Pair-Nummern
+      console.log('Grid Layout (same numbers = matching pair):');
+      for (let row = 0; row < 4; row++) {
+        let rowString = '';
+        for (let col = 0; col < 4; col++) {
+          const index = row * 4 + col;
+          const card = shuffledCards[index];
+          const pairNum = pairMap.get(card.pokemonName);
+          rowString += pairNum + ' ';
+        }
+        console.log(rowString.trim());
+      }
+
+      console.log('\nPair reference:');
+      pairMap.forEach((number, pokemonName) => {
+        console.log(`${number}: ${pokemonName}`);
+      });
+      console.log('----------------------------------------\n');
+    }
+
+    return shuffledCards;
   }
 
   // Bestimme den Gewinner
@@ -320,16 +378,12 @@ export class GameManager {
       return player1.id;
     }
 
-    // Bei Gleichstand: Der mit der geringeren Zeit gewinnt
-    if (
-      game.playerFinishTimes &&
-      game.playerFinishTimes[player1.id] &&
-      game.playerFinishTimes[player2.id]
-    ) {
-      const time1 = game.playerFinishTimes[player1.id].getTime();
-      const time2 = game.playerFinishTimes[player2.id].getTime();
+    // Bei Gleichstand: Der mit der geringeren Gesamtbedenkzeit gewinnt
+    if (game.playerTotalTime) {
+      const time1 = game.playerTotalTime[player1.id] || 0;
+      const time2 = game.playerTotalTime[player2.id] || 0;
 
-      // Der Spieler mit der früheren (niedrigeren) Finish-Zeit gewinnt
+      // Der Spieler mit der geringeren Gesamtbedenkzeit gewinnt
       if (time1 < time2) {
         return player1.id;
       } else if (time2 < time1) {
@@ -367,31 +421,19 @@ export class GameManager {
         const isScoreTie = winnerScore === loserScore;
 
         if (game.winner === currentPlayerId) {
-          if (isScoreTie && game.playerFinishTimes && loser) {
-            // Gewonnen durch Zeit bei Gleichstand
-            const winTime = game.playerFinishTimes[currentPlayerId];
-            const loseTime = game.playerFinishTimes[loser.id];
-            if (winTime && loseTime && game.startTime) {
-              const winDuration = Math.round((winTime.getTime() - game.startTime.getTime()) / 1000);
-              const loseDuration = Math.round(
-                (loseTime.getTime() - game.startTime.getTime()) / 1000,
-              );
-              return `🎉 You won! Both found ${currentPlayerScore} matches, but you were faster (${winDuration}s vs ${loseDuration}s)!`;
-            }
+          if (isScoreTie && game.playerTotalTime && loser) {
+            // Gewonnen durch Zeit bei Gleichstand - verwende playerTotalTime
+            const winTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
+            const loseTime = Math.round((game.playerTotalTime[loser.id] || 0) / 1000);
+            return `🎉 You won! Both found ${currentPlayerScore} matches, but you were faster (${winTime}s vs ${loseTime}s)!`;
           }
           return `🎉 You won! You found ${currentPlayerScore} matches!`;
         } else {
-          if (isScoreTie && game.playerFinishTimes && winner) {
-            // Verloren durch Zeit bei Gleichstand
-            const winTime = game.playerFinishTimes[game.winner];
-            const loseTime = game.playerFinishTimes[currentPlayerId];
-            if (winTime && loseTime && game.startTime) {
-              const winDuration = Math.round((winTime.getTime() - game.startTime.getTime()) / 1000);
-              const loseDuration = Math.round(
-                (loseTime.getTime() - game.startTime.getTime()) / 1000,
-              );
-              return `😢 You lost! Both found ${currentPlayerScore} matches, but ${winner?.name} was faster (${winDuration}s vs ${loseDuration}s)`;
-            }
+          if (isScoreTie && game.playerTotalTime && winner) {
+            // Verloren durch Zeit bei Gleichstand - verwende playerTotalTime
+            const winTime = Math.round((game.playerTotalTime[game.winner] || 0) / 1000);
+            const loseTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
+            return `😢 You lost! Both found ${currentPlayerScore} matches, but ${winner?.name} was faster (${winTime}s vs ${loseTime}s)`;
           }
           return `😢 You lost! ${winner?.name} won with ${winnerScore} matches (you: ${currentPlayerScore})`;
         }
@@ -414,5 +456,45 @@ export class GameManager {
         this.games.delete(gameId);
       }
     }
+  }
+
+  // MQTT Event: Spiel beendet
+  private publishGameEndEvent(game: Game): void {
+    if (!game.startTime || !game.finishTime || !game.winner) return;
+
+    const gameDuration = Math.round((game.finishTime.getTime() - game.startTime.getTime()) / 1000);
+
+    const playerStats = game.players.map((player) => {
+      const score = game.scores[player.id] || 0;
+
+      // Verwende die tatsächlich getrackte Bedenkzeit
+      let playerTime = game.playerTotalTime?.[player.id] || 0;
+      playerTime = Math.round(playerTime / 1000); // Konvertiere von ms zu Sekunden
+
+      // Sanity check: Stelle sicher, dass die Zeit realistisch ist
+      if (playerTime <= 0 || playerTime > gameDuration) {
+        // Fallback: Schätze basierend auf der Spieldauer und Matches
+        const totalMatches = Object.values(game.scores).reduce((sum, s) => sum + s, 0);
+        if (totalMatches > 0) {
+          playerTime = Math.round((gameDuration * score) / totalMatches);
+        } else {
+          playerTime = Math.round(gameDuration / 2);
+        }
+      }
+
+      return {
+        email: player.email,
+        score: score,
+        time: Math.max(1, Math.min(playerTime, gameDuration - 1)), // Mindestens 1s, maximal gameDuration-1s
+      };
+    });
+
+    mqttService.publishGameEnd({
+      matchId: game.id,
+      winner: game.players.find((p) => p.id === game.winner)?.email || '',
+      playerStats: playerStats,
+      duration: gameDuration,
+      timestamp: new Date().toISOString(),
+    });
   }
 }

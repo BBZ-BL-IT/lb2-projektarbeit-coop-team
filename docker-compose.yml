@@ -117,7 +117,7 @@ services:
   #    ports:
   #      - "8003:8003"
   #    environment:
-  #      - NODE_ENV=production
+  #      - NODE_ENV=development
   #      - PORT=8003
   #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
   #      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
@@ -139,7 +139,7 @@ services:
   #    ports:
   #      - "8004:8004"
   #    environment:
-  #      - NODE_ENV=production
+  #      - NODE_ENV=development
   #      - PORT=8004
   #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
   #      - LOG_DIRECTORY=/app/logs
