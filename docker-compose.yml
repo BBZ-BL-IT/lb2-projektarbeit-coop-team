@@ -114,8 +114,6 @@ services:
     build:
       context: ./backend/stats-service
       dockerfile: Dockerfile
-    ports:
-      - "8003:8003"
     environment:
       - NODE_ENV=development
       - DOCKER_ENV=true
