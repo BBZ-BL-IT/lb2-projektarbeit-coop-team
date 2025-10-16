@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import {
   getAllUserStats,
+  getLeaderboard,
   getUserStatsByEmail,
 } from "../services/StatsRepository";
 
@@ -13,6 +14,20 @@ router.get("/stats", async (_req: Request, res: Response) => {
   } catch (error) {
     console.error("Failed to fetch stats:", error);
     res.status(500).json({ message: "Failed to fetch stats." });
+  }
+});
+
+router.get("/leaderboard", async (req: Request, res: Response) => {
+  try {
+    const limitParam = req.query.limit as string | undefined;
+    const parsedLimit = limitParam
+      ? Number.parseInt(limitParam, 10)
+      : undefined;
+    const leaderboard = await getLeaderboard(parsedLimit);
+    res.json(leaderboard);
+  } catch (error) {
+    console.error("Failed to fetch leaderboard:", error);
+    res.status(500).json({ message: "Failed to fetch leaderboard." });
   }
 });
 
