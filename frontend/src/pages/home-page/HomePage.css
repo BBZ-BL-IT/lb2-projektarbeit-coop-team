@@ -14,10 +14,10 @@
 }
 
 .home-container {
-  min-height: 100dvh;
+  min-height: 50dvh;
   display: grid;
   place-items: center;
-  padding: 3rem 1.25rem;
+  padding: 1.25rem;
   background: var(--bg);
   color: var(--text);
 }
@@ -89,6 +89,9 @@
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-sm);
   padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -163,16 +166,16 @@
 
 .join-game-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .code-input-wrap {
   position: relative;
   display: grid;
   place-items: center;
+  margin-bottom: 1.5rem; /* Abstand zwischen Dots und Button */
 }
 .game-code-input {
   width: 220px;
@@ -201,7 +204,7 @@
 
 .code-dots {
   position: absolute;
-  bottom: -10px;
+  bottom: -16px;
   left: 0;
   right: 0;
   display: flex;
@@ -226,6 +229,7 @@
   color: var(--muted);
   font-size: 0.9rem;
   margin-top: 0.6rem;
+  text-align: center;
 }
 
 .divider {
@@ -256,4 +260,39 @@
     width: 100%;
     letter-spacing: 0.3rem;
   }
+}
+
+:root {
+  --action-width: 280px; /* gemeinsame Breite für beide Buttons (und das Input) */
+}
+
+/* Pane-Inhalt mittig, gleiche vertikale Struktur links/rechts */
+.pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.game-code-input {
+  width: var(--action-width);
+}
+
+.single-player-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.single-player-section .pane-title {
+  margin: 0;
+  text-align: center;
+}
+
+.single-player-section .game-button {
+  width: var(--action-width);
 }
