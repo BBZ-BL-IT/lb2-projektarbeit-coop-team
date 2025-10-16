@@ -6,8 +6,14 @@
   transition: transform 0.2s ease;
 }
 
+/* Standard-Hover (nur für NICHT-gematchte Karten) */
 .card:hover {
   transform: translateY(-6px) scale(1.02);
+}
+
+/* Sobald Karte gematcht ist → kein Hover-Effekt */
+.card.matched:hover {
+  transform: none;
 }
 
 /* Nicht klickbare Karten (Multiplayer) */
@@ -15,12 +21,11 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
-
 .card.not-clickable:hover {
   transform: none;
 }
 
-/* Enthält Vorder- und Rückseite, wird für die Drehung genutzt */
+/* Enthält Vorder- und Rückseite */
 .card-inner {
   position: relative;
   width: 100%;
@@ -29,6 +34,7 @@
   transition: transform 0.5s;
 }
 
+/* Flip-Zustand */
 .card.flipped .card-inner {
   transform: rotateY(180deg);
 }
@@ -49,7 +55,7 @@
   backface-visibility: hidden;
 }
 
-/* Animierter Rahmen-Effekt */
+/* Animierter Rahmen-Effekt (nur, wenn nicht gematcht) */
 .card-face::before {
   content: "";
   position: absolute;
@@ -73,21 +79,28 @@
   mask-composite: exclude;
 }
 
+/* Hover aktiviert Verlauf nur bei NICHT-gematchten Karten */
 .card:hover .card-face::before {
   opacity: 1;
 }
 
-/* Vorderseite der Karte */
+/* Bei gematchten Karten kein Verlauf-Overlay */
+.card.matched .card-face::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+/* Vorderseite */
 .card-front {
   transform: rotateY(0deg);
 }
 
-/* Rückseite der Karte */
+/* Rückseite */
 .card-back {
   transform: rotateY(180deg);
 }
 
-/* Bilder in der Karte */
+/* Kartenbild */
 .card-face img {
   height: 100%;
   width: 100%;
@@ -99,25 +112,26 @@
   image-rendering: crisp-edges;
 }
 
-/* Gefundene Karten (Multiplayer) */
+/* ✅ Gefundene Karten: weißer Hintergrund mit schöner Border */
 .card-face.matched {
+  background: #fff;
   box-shadow:
-    0 0 20px rgba(34, 197, 94, 0.4),
     rgba(50, 50, 93, 0.1) 0px 6px 12px -2px,
     rgba(0, 0, 0, 0.1) 0 3px 7px -3px;
+  transition: border 0.2s ease;
 }
 
-/* Eigene gefundene Karten */
+/* Eigene gematchte Karte – schönes Grün */
 .card-face.matched.matched-own {
-  border: #121212 5px solid;
+  border: 4px solid #16a34a;
 }
 
-/* Gegnerische gefundene Karten */
+/* Gegnerische gematchte Karte – dezentes Rot */
 .card-face.matched.matched-opponent {
-  border: #2563e7 5px solid;
+  border: 4px solid #dc2626;
 }
 
-/* Animation für den Farbverlauf-Rahmen */
+/* Farbverlauf-Rahmen-Animation */
 @keyframes borderShift {
   0% {
     background-position: 0% 50%;
