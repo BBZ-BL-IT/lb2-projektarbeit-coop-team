@@ -17,7 +17,10 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="home-container">
-        <h2>Loading...</h2>
+        <div className="ambient" />
+        <div className="shell">
+          <h2 className="headline shimmer">Loading…</h2>
+        </div>
       </div>
     );
   }
@@ -25,7 +28,13 @@ export default function HomePage() {
   if (!isAuthenticated) {
     return (
       <div className="home-container">
-        <h2>Please sign in to access your profile!</h2>
+        <div className="ambient" />
+        <div className="shell">
+          <h2 className="headline">Bitte einloggen, um fortzufahren</h2>
+          <p className="subtle">
+            Du brauchst ein Konto, um Multiplayer zu nutzen.
+          </p>
+        </div>
       </div>
     );
   }
@@ -44,39 +53,32 @@ export default function HomePage() {
     setIsCreatingGame(true);
     setError("");
 
-    // Entferne alle bestehenden Event-Listener für diesen Zweck
     socket.off("authenticated");
     socket.off("game-created");
     socket.off("game-error");
 
-    // Set up event listeners mit einmaliger Verwendung
     socket.once(
       "authenticated",
       (data: { success: boolean; error?: string }) => {
         if (data.success) {
-          console.log("Authentication successful, creating game...");
           socket.emit("create-game");
         } else {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      }
+      },
     );
 
     socket.once("game-created", (gameId: string) => {
-      console.log("Game created with ID:", gameId);
       setIsCreatingGame(false);
       navigate(`/multiplayer/${gameId}`);
     });
 
     socket.once("game-error", (errorMessage: string) => {
-      console.log("Game creation error:", errorMessage);
       setError(errorMessage);
       setIsCreatingGame(false);
     });
 
-    // Authenticate and create game
-    console.log("Authenticating user:", user.name);
     socket.emit("authenticate", {
       uuid: user.uuid,
       name: user.name,
@@ -89,7 +91,6 @@ export default function HomePage() {
       setError("Please enter a game code");
       return;
     }
-
     if (!socket) {
       setError("Unable to connect to game server");
       return;
@@ -99,8 +100,6 @@ export default function HomePage() {
     setError("");
 
     try {
-      // Navigate directly to the multiplayer game page
-      // The authentication and joining will be handled there
       navigate(`/multiplayer/${gameCode.trim().toUpperCase()}`);
     } catch (error) {
       console.error("Error joining game:", error);
@@ -113,89 +112,96 @@ export default function HomePage() {
 
   return (
     <div className="home-container">
-      <div className="welcome-section">
-        <h2>Welcome back, {user?.name}!</h2>
-        <div className="user-info">
-          <p>Email: {user?.email}</p>
-          <p>User ID: {user?.uuid}</p>
-        </div>
-      </div>
+      {/* Ambient Hintergrund */}
+      <div className="ambient" />
 
-      {error && (
-        <div
-          className="error-message"
-          style={{
-            background: "rgba(220, 53, 69, 0.1)",
-            border: "2px solid #dc3545",
-            borderRadius: "10px",
-            padding: "15px",
-            margin: "15px 0",
-            textAlign: "center",
-            fontWeight: "bold",
-            color: "#721c24",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <div className="game-actions">
-        <div className="action-section">
-          <h3>Start Playing</h3>
-
-          <div className="create-game-section">
-            <h4>Create New Multiplayer Game</h4>
-            <button
-              className="game-button create-button"
-              onClick={handleCreateGame}
-              disabled={isCreatingGame}
-            >
-              {isCreatingGame ? "Creating..." : "Create Multiplayer Game"}
-            </button>
+      <div className="shell">
+        <div className="welcome-section glass glow">
+          <h2 className="headline">
+            Welcome back, <span className="gradient-text">{user?.name}</span>!
+          </h2>
+          <div className="user-info">
+            <p>Email: {user?.email}</p>
+            <p>User ID: {user?.uuid}</p>
           </div>
+        </div>
 
-          <div className="join-game-section">
-            <h4>Join Existing Multiplayer Game</h4>
-            <div className="join-game-container">
-              <input
-                type="text"
-                className="game-code-input"
-                placeholder="Enter 4-digit game code"
-                value={gameCode}
-                onChange={(e) => {
-                  // Nur Zahlen erlauben und auf 4 Zeichen begrenzen
-                  const value = e.target.value.replace(/\D/g, "").slice(0, 4);
-                  setGameCode(value);
-                }}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && gameCode.length === 4 && handleJoinGame()
-                }
-                disabled={isJoiningGame}
-                maxLength={4}
-              />
+        {error && <div className="error-message glow error-glow">{error}</div>}
+
+        <div className="game-actions glass glow">
+          <h3 className="section-title">Start Playing</h3>
+
+          <div className="grid">
+            {/* Create */}
+            <div className="pane">
+              <h4 className="pane-title">Create New Multiplayer Game</h4>
               <button
-                className="game-button join-button"
-                onClick={handleJoinGame}
-                disabled={isJoiningGame || gameCode.length !== 4}
+                className="game-button btn-primary"
+                onClick={handleCreateGame}
+                disabled={isCreatingGame}
               >
-                {isJoiningGame ? "Joining..." : "Join Multiplayer Game"}
+                {isCreatingGame ? "Creating…" : "Create Multiplayer Game"}
               </button>
+              <p className="hint">Instant lobby • Share the 4-digit code</p>
+            </div>
+
+            {/* Join */}
+            <div className="pane">
+              <h4 className="pane-title">Join Existing Multiplayer Game</h4>
+              <div className="join-game-container">
+                <div
+                  className={`code-input-wrap ${gameCode.length === 4 ? "ok" : ""}`}
+                >
+                  <input
+                    type="text"
+                    className="game-code-input"
+                    placeholder="0000"
+                    value={gameCode}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 4);
+                      setGameCode(value);
+                    }}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" &&
+                      gameCode.length === 4 &&
+                      handleJoinGame()
+                    }
+                    disabled={isJoiningGame}
+                    maxLength={4}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    aria-label="Enter 4 digit game code"
+                  />
+                  <span className="code-dots" aria-hidden="true">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <span
+                        key={i}
+                        className={i < gameCode.length ? "filled" : ""}
+                      />
+                    ))}
+                  </span>
+                </div>
+                <button
+                  className="game-button btn-accent"
+                  onClick={handleJoinGame}
+                  disabled={isJoiningGame || gameCode.length !== 4}
+                >
+                  {isJoiningGame ? "Joining…" : "Join Multiplayer Game"}
+                </button>
+              </div>
+              <p className="hint">Type the 4 digits • Press Enter to join</p>
             </div>
           </div>
 
-          <div
-            className="single-player-section"
-            style={{
-              marginTop: "30px",
-              borderTop: "1px solid #ddd",
-              paddingTop: "20px",
-            }}
-          >
-            <h4>Single Player Practice</h4>
+          {/* Single player */}
+          <div className="divider" />
+          <div className="single-player-section">
+            <h4 className="pane-title">Single Player Practice</h4>
             <button
-              className="game-button"
+              className="game-button btn-muted"
               onClick={() => navigate("/game/practice")}
-              style={{ background: "#6c757d" }}
             >
               Play Solo (Practice Mode)
             </button>
