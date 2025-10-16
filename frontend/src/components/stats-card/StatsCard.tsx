@@ -1,16 +1,5 @@
 import "./StatsCard.css";
-
-export type UserStats = {
-  username: string;
-  wins: number;
-  losses: number;
-  winRate?: number;
-  totalTimePlayed: number; // Sekunden
-  totalGamesPlayed: number;
-  averageGameDuration?: number; // Sekunden
-  highestScore: number;
-  totalMatchedPairs: number;
-};
+import { UserStats } from "../../types/stats";
 
 function formatDuration(totalSeconds: number) {
   const s = Math.max(0, Math.floor(totalSeconds));
@@ -130,7 +119,35 @@ function Stat({
   );
 }
 
-export default function StatsCard({ stats }: { stats: UserStats }) {
+export default function StatsCard({
+  stats,
+  isLoading = false,
+}: {
+  stats: UserStats | null;
+  isLoading?: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <section className="pane stats-card">
+        <header className="stats-header">
+          <div className="stats-title">Your Stats</div>
+        </header>
+        <div className="stats-empty">Loading stats…</div>
+      </section>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <section className="pane stats-card">
+        <header className="stats-header">
+          <div className="stats-title">Your Stats</div>
+        </header>
+        <div className="stats-empty">No stats available yet.</div>
+      </section>
+    );
+  }
+
   const total = stats.totalGamesPlayed || stats.wins + stats.losses;
   const winRate =
     typeof stats.winRate === "number"

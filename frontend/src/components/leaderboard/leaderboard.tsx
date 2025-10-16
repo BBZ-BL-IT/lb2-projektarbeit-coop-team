@@ -1,18 +1,16 @@
 import "./leaderboard.css";
-
-export type LeaderboardEntry = {
-  username: string;
-  wins: number;
-};
+import { LeaderboardEntry } from "../../types/stats";
 
 export default function Leaderboard({
   entries,
   title = "Leaderboard",
   maxRows = 5,
+  isLoading = false,
 }: {
   entries: LeaderboardEntry[];
   title?: string;
   maxRows?: number;
+  isLoading?: boolean;
 }) {
   // Sortierung: absteigend nach Gewinnen
   const sorted = [...entries].sort((a, b) => b.wins - a.wins);
@@ -25,7 +23,7 @@ export default function Leaderboard({
       username: `placeholder-${i}`,
       wins: NaN,
       placeholder: true,
-    }),
+    })
   );
 
   const rows = [...top, ...placeholders];
@@ -39,33 +37,36 @@ export default function Leaderboard({
         <h4 className="leaderboard-title">{title}</h4>
         <span className="leaderboard-subtle">Top {maxRows}</span>
       </header>
+      {isLoading ? (
+        <div className="leaderboard-empty">Loading leaderboard…</div>
+      ) : (
+        <div className="leaderboard-list" role="list" style={listGridVars}>
+          {rows.map((row, idx) => {
+            const rank = idx + 1;
+            const isPlaceholder = (row as any).placeholder;
 
-      <div className="leaderboard-list" role="list" style={listGridVars}>
-        {rows.map((row, idx) => {
-          const rank = idx + 1;
-          const isPlaceholder = (row as any).placeholder;
-
-          return (
-            <div
-              className={`leaderboard-entry ${isPlaceholder ? "placeholder" : ""}`}
-              role="listitem"
-              key={row.username || rank}
-            >
-              <RankBadge rank={rank} />
+            return (
               <div
-                className={`leaderboard-name ${isPlaceholder ? "muted" : ""}`}
+                className={`leaderboard-entry ${isPlaceholder ? "placeholder" : ""}`}
+                role="listitem"
+                key={row.username || rank}
               >
-                {isPlaceholder ? "--" : row.username}
+                <RankBadge rank={rank} />
+                <div
+                  className={`leaderboard-name ${isPlaceholder ? "muted" : ""}`}
+                >
+                  {isPlaceholder ? "--" : row.username}
+                </div>
+                <div
+                  className={`leaderboard-score ${isPlaceholder ? "muted" : ""}`}
+                >
+                  {isPlaceholder ? "--" : `${row.wins} wins`}
+                </div>
               </div>
-              <div
-                className={`leaderboard-score ${isPlaceholder ? "muted" : ""}`}
-              >
-                {isPlaceholder ? "--" : `${row.wins} wins`}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

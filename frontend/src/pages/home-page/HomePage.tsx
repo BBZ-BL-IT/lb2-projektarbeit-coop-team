@@ -1,11 +1,12 @@
-import { useState } from "react";
+import "./HomePage.css";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSocket } from "../../hooks/useSocket";
 import StatsCard from "../../components/stats-card/StatsCard";
 import Leaderboard from "../../components/leaderboard/leaderboard";
-import { leaderboardMock, userStatsMock } from "../../data/dummy-objects";
-import "./HomePage.css";
+import { LeaderboardEntry, UserStats } from "../../types/stats";
+import { fetchLeaderboard, fetchUserStats } from "../../services/statsService";
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -14,11 +15,97 @@ export default function HomePage() {
   const [isCreatingGame, setIsCreatingGame] = useState(false);
   const [isJoiningGame, setIsJoiningGame] = useState(false);
   const [error, setError] = useState("");
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
+  const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(true);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [leaderboardEntries, setLeaderboardEntries] = useState<
+    LeaderboardEntry[]
+  >([]);
 
   const socket = useSocket();
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setUserStats(null);
+      setLeaderboardEntries([]);
+      setIsStatsLoading(false);
+      setIsLeaderboardLoading(false);
+      return;
+    }
 
-  // StatsCard bekommt immer die Dummy-Daten
-  const stats = userStatsMock;
+    let cancelled = false;
+    const statsController = new AbortController();
+    const leaderboardController = new AbortController();
+
+    const loadStats = async () => {
+      setIsStatsLoading(true);
+      setStatsError(null);
+
+      try {
+        const payload = await fetchUserStats(user.name, {
+          signal: statsController.signal,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        setUserStats(payload);
+      } catch (fetchError) {
+        if ((fetchError as Error).name === "AbortError") {
+          return;
+        }
+        console.error("Failed to load user stats", fetchError);
+        if (!cancelled) {
+          setStatsError("Unable to load your stats right now.");
+          setUserStats(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsStatsLoading(false);
+        }
+      }
+    };
+
+    const loadLeaderboard = async () => {
+      setIsLeaderboardLoading(true);
+      setLeaderboardError(null);
+      try {
+        const payload = await fetchLeaderboard({
+          signal: leaderboardController.signal,
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        setLeaderboardEntries(payload);
+      } catch (fetchError) {
+        if ((fetchError as Error).name === "AbortError") {
+          return;
+        }
+        console.error("Failed to load leaderboard", fetchError);
+        if (!cancelled) {
+          setLeaderboardError("Unable to load the leaderboard right now.");
+          setLeaderboardEntries([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLeaderboardLoading(false);
+        }
+      }
+    };
+
+    loadStats();
+    loadLeaderboard();
+
+    return () => {
+      cancelled = true;
+      statsController.abort();
+      leaderboardController.abort();
+    };
+  }, [isAuthenticated, user?.name]);
 
   if (isLoading) {
     return (
@@ -72,7 +159,7 @@ export default function HomePage() {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      },
+      }
     );
 
     socket.once("game-created", (gameId: string) => {
@@ -121,7 +208,12 @@ export default function HomePage() {
       <div className="ambient" />
       <div className="cards-row">
         <div className="stats-card-col">
-          <StatsCard stats={stats} />
+          <StatsCard stats={userStats} isLoading={isStatsLoading} />
+          {statsError && (
+            <div className="error-message glow error-glow" role="alert">
+              {statsError}
+            </div>
+          )}
         </div>
         <div className="main-card-col">
           {/* Der Mittelteil bleibt exakt wie bisher! */}
@@ -214,7 +306,15 @@ export default function HomePage() {
           </div>
         </div>
         <div className="leaderboard-card-col">
-          <Leaderboard entries={leaderboardMock} />
+          <Leaderboard
+            entries={leaderboardEntries}
+            isLoading={isLeaderboardLoading}
+          />
+          {leaderboardError && (
+            <div className="error-message glow error-glow" role="alert">
+              {leaderboardError}
+            </div>
+          )}
         </div>
       </div>
     </div>

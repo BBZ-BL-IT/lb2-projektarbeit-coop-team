@@ -56,6 +56,19 @@
   width: 100%;
 }
 
+.leaderboard-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  border: 1px dashed var(--panel-border);
+  border-radius: var(--radius-sm);
+  min-height: 180px;
+  background: rgba(15, 23, 42, 0.02);
+  font-size: 0.95rem;
+}
+
 /* === EINTRAG === */
 .leaderboard-entry {
   background: #fff;
