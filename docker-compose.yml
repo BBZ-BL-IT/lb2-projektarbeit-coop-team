@@ -132,10 +132,10 @@ services:
       - memory-game-network
     restart: unless-stopped
   #
-  #  # Logging Service - runs on port 8004
-  #  logging-service:
+  #  # Log Service - runs on port 8004
+  #  log-service:
   #    build:
-  #      context: ./backend/logging-service
+  #      context: ./backend/log-service
   #      dockerfile: Dockerfile
   #    ports:
   #      - "8004:8004"
