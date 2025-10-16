@@ -13,29 +13,29 @@ interface Player {
   isReady: boolean;
 }
 
-interface Card {
+interface GameCard {
   id: string;
   pokemonName: string;
   pokemonImg: string;
   isFlipped: boolean;
   isMatched: boolean;
-  matchedBy?: string; // ID des Spielers der das Match gemacht hat
+  matchedBy?: string;
 }
 
 interface Game {
   id: string;
   players: Player[];
-  cards: Card[];
+  cards: GameCard[];
   currentPlayerIndex: number;
   status: "waiting" | "playing" | "finished";
   flippedCards: string[];
   scores: { [playerId: string]: number };
   createdAt: string;
   lastActivity: string;
-  isProcessingMatch?: boolean; // Verhindert weitere Züge während Match-Prüfung
-  playerFinishTimes?: { [playerId: string]: string }; // Frontend erhält Dates als Strings
-  playerTotalTime?: { [playerId: string]: number }; // Akkumulierte Zeit pro Spieler in ms
-  currentTurnStartTime?: string; // Wann der aktuelle Zug gestartet wurde
+  isProcessingMatch?: boolean;
+  playerFinishTimes?: { [playerId: string]: string };
+  playerTotalTime?: { [playerId: string]: number };
+  currentTurnStartTime?: string;
 }
 
 interface GameState {
@@ -61,13 +61,11 @@ export default function MultiplayerGamePage() {
       navigate("/");
       return;
     }
-
     if (!socket) {
       setError("Unable to connect to game server");
       return;
     }
 
-    // Entferne alle bestehenden Event-Listener
     socket.off("authenticated");
     socket.off("game-joined");
     socket.off("game-state-updated");
@@ -76,64 +74,34 @@ export default function MultiplayerGamePage() {
     socket.off("game-finished");
     socket.off("game-error");
 
-    // Socket Event Listeners mit einmaliger Verwendung
     socket.once(
       "authenticated",
       (data: { success: boolean; error?: string }) => {
-        console.log("Authentication result:", data);
         if (data.success) {
           setIsConnecting(false);
-          // Versuche dem Spiel beizutreten
-          if (gameId) {
-            console.log("Attempting to join game:", gameId);
-            socket.emit("join-game", gameId);
-          }
+          if (gameId) socket.emit("join-game", gameId);
         } else {
           setError(data.error || "Authentication failed");
           setIsConnecting(false);
         }
-      }
+      },
     );
 
-    socket.on("game-joined", (joinedGameId: string) => {
-      console.log("Successfully joined game:", joinedGameId);
-      setError("");
-    });
-
-    socket.on("game-state-updated", (newGameState: GameState) => {
-      console.log("Game state updated:", newGameState);
-      setGameState(newGameState);
-    });
-
-    socket.on("player-joined", (player: Player) => {
-      console.log("Player joined:", player);
-    });
-
-    socket.on("player-left", (playerId: string) => {
-      console.log("Player left:", playerId);
-    });
-
-    socket.on(
-      "game-finished",
-      (winner: Player, finalScores: { [playerId: string]: number }) => {
-        console.log("Game finished:", winner, finalScores);
-      }
+    socket.on("game-joined", () => setError(""));
+    socket.on("game-state-updated", (newGameState: GameState) =>
+      setGameState(newGameState),
     );
+    socket.on("player-joined", () => {});
+    socket.on("player-left", () => {});
+    socket.on("game-finished", () => {});
+    socket.on("game-error", (errorMessage: string) => setError(errorMessage));
 
-    socket.on("game-error", (errorMessage: string) => {
-      console.log("Game error:", errorMessage);
-      setError(errorMessage);
-    });
-
-    // Authentifizierung mit Socket
-    console.log("Authenticating user:", user.name);
     socket.emit("authenticate", {
       uuid: user.uuid,
       name: user.name,
       email: user.email,
     });
 
-    // Cleanup
     return () => {
       socket.off("authenticated");
       socket.off("game-joined");
@@ -146,54 +114,43 @@ export default function MultiplayerGamePage() {
   }, [socket, isAuthenticated, user, gameId, navigate]);
 
   const handleCardClick = (cardId: string) => {
-    if (!socket || !gameState || !gameState.isYourTurn) {
-      return;
-    }
+    if (!socket || !gameState || !gameState.isYourTurn) return;
 
     const card = gameState.game.cards.find((c) => c.id === cardId);
-    if (!card || card.isFlipped || card.isMatched) {
-      return;
-    }
+    if (!card || card.isFlipped || card.isMatched) return;
 
     socket.emit("flip-card", cardId);
   };
 
   const handleLeaveGame = () => {
-    if (socket) {
-      socket.emit("leave-game");
-    }
+    if (socket) socket.emit("leave-game");
     navigate("/");
   };
 
-  // Timer-Update-Effekt
+  // Timer-Update – nutzt serverseitig gelieferten „total time“ + aktueller Turn
   useEffect(() => {
-    if (!gameState || gameState.game.status !== "playing") {
-      return;
-    }
+    if (!gameState || gameState.game.status !== "playing") return;
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const newTimers: { [playerId: string]: number } = {};
 
       gameState.game.players.forEach((player) => {
-        // Basis: Akkumulierte Zeit für diesen Spieler
         const totalTime = gameState.game.playerTotalTime?.[player.id] || 0;
 
-        // Wenn dieser Spieler gerade am Zug ist, addiere die aktuelle Zug-Zeit
         if (
           gameState.game.currentPlayerIndex ===
             gameState.game.players.indexOf(player) &&
           gameState.game.currentTurnStartTime
         ) {
           const currentTurnStart = new Date(
-            gameState.game.currentTurnStartTime
+            gameState.game.currentTurnStartTime,
           ).getTime();
           const currentTurnTime = now - currentTurnStart;
           newTimers[player.id] = Math.floor(
-            (totalTime + currentTurnTime) / 1000
+            (totalTime + currentTurnTime) / 1000,
           );
         } else {
-          // Für Spieler die nicht am Zug sind, zeige nur akkumulierte Zeit
           newTimers[player.id] = Math.floor(totalTime / 1000);
         }
       });
@@ -209,12 +166,19 @@ export default function MultiplayerGamePage() {
     gameState?.game.currentPlayerIndex,
   ]);
 
-  // Formatiere Zeit in MM:SS Format
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
+
+  const initials = (name?: string) =>
+    (name || "?")
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
   if (!isAuthenticated) {
     return (
@@ -257,107 +221,124 @@ export default function MultiplayerGamePage() {
   }
 
   const { game } = gameState;
-  const currentUser = game.players.find((p) => p.id === user?.uuid);
-  const opponent = game.players.find((p) => p.id !== user?.uuid);
+  const me = game.players.find((p) => p.id === user?.uuid);
+  const opp = game.players.find((p) => p.id !== user?.uuid);
+
+  const twoPlayersReady = game.players.length >= 2;
+  const waiting = game.status === "waiting" || !twoPlayersReady;
+
+  const isTurn = (player?: Player) =>
+    !!player && game.players[game.currentPlayerIndex]?.id === player.id;
 
   return (
     <div className="multiplayer-game-container">
-      <div className="game-header">
-        <div className="game-info">
-          <div className="game-id">Game: {game.id}</div>
+      <div className="game-header glass glow">
+        {/* Game PIN – clean wie Join Game */}
+        <div className="game-pin-wrap">
+          <label className="game-pin-label">Game Code</label>
+          <div className="game-pin-box">{game.id}</div>
+        </div>
 
-          <div className="player-info">
-            {currentUser && (
-              <div
-                className={`player-card ${game.currentPlayerIndex === game.players.findIndex((p) => p.id === currentUser.id) ? "current-player" : ""}`}
-              >
-                <div className="player-name">{currentUser.name} (You)</div>
-                <div className="player-score own-score">
-                  Score: {game.scores[currentUser.id] || 0}
-                </div>
-                {game.status === "playing" && (
-                  <div className="player-timer">
-                    Time: {formatTime(timers[currentUser.id] || 0)}
-                  </div>
-                )}
-              </div>
-            )}
+        {/* zwei Spalten: du links, Gegner rechts */}
+        <div className="game-players">
+          {/* ME LEFT */}
+          <div className={`player-card ${isTurn(me) ? "is-turn" : ""}`}>
+            <div className="player-avatar">{initials(me?.name)}</div>
+            <div className="player-name">{me?.name || "You"}</div>
+            <div className="player-score">
+              Score: {me ? game.scores[me.id] || 0 : 0}
+            </div>
+            <div className="player-timer">
+              Time: {me ? formatTime(timers[me.id] || 0) : "0:00"}
+            </div>
+            {isTurn(me) && <div className="turn-tag">Your turn</div>}
+          </div>
 
-            {opponent && (
-              <div
-                className={`player-card ${game.currentPlayerIndex === game.players.findIndex((p) => p.id === opponent.id) ? "current-player" : ""}`}
-              >
-                <div className="player-name">{opponent.name}</div>
-                <div className="player-score opponent-score">
-                  Score: {game.scores[opponent.id] || 0}
-                </div>
-                {game.status === "playing" && (
-                  <div className="player-timer">
-                    Time: {formatTime(timers[opponent.id] || 0)}
-                  </div>
-                )}
-              </div>
-            )}
+          {/* OPP RIGHT */}
+          <div className={`player-card ${isTurn(opp) ? "is-turn" : ""}`}>
+            <div className="player-avatar">{initials(opp?.name)}</div>
+            <div className="player-name">{opp?.name || "Opponent"}</div>
+            <div className="player-score">
+              Score: {opp ? game.scores[opp.id] || 0 : 0}
+            </div>
+            <div className="player-timer">
+              Time: {opp ? formatTime(timers[opp.id] || 0) : "0:00"}
+            </div>
+            {isTurn(opp) && <div className="turn-tag">Their turn</div>}
           </div>
         </div>
 
+        {/* Status / Finish */}
         {game.status === "finished" ? (
           <div
             className={`game-result ${gameState.message?.includes("You won") ? "winner" : "loser"}`}
           >
-            {gameState.message}
+            <span className="result-row">
+              <span className="result-icon" aria-hidden>
+                {gameState.message?.includes("You won") ? "🏆" : "💥"}
+              </span>
+              <span>{gameState.message}</span>
+            </span>
+            <span className="result-sub">
+              {gameState.message?.includes("You won")
+                ? "GG! That was crisp!"
+                : "Tough one. Rematch?"}
+            </span>
+            {gameState.message?.includes("You won") && (
+              <span className="confetti" aria-hidden />
+            )}
           </div>
         ) : (
-          <div
-            className={`turn-indicator ${game.status === "waiting" ? "waiting" : !gameState.isYourTurn ? "waiting" : ""}`}
-          >
-            {game.status === "waiting"
-              ? `Waiting for another player to join... (Game Code: ${game.id})`
-              : gameState.message}
+          <div className={`turn-indicator ${waiting ? "waiting" : ""}`}>
+            {waiting ? (
+              <>
+                Waiting for another player to join
+                <span className="dots" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </>
+            ) : (
+              gameState.message
+            )}
           </div>
         )}
       </div>
 
-      {game.status === "playing" && (
-        <div className="cards-container">
-          {game.cards.map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              imageUrl={card.pokemonImg}
-              altText={card.pokemonName}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              isClickable={
-                gameState.isYourTurn &&
-                !card.isFlipped &&
-                !card.isMatched &&
-                !game.isProcessingMatch
-              }
-              onClick={() => handleCardClick(card.id)}
-              matchedBy={card.matchedBy}
-              currentUserId={user?.uuid}
-            />
-          ))}
-        </div>
-      )}
-
-      {game.status === "finished" && (
-        <div className="cards-container">
-          {game.cards.map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              imageUrl={card.pokemonImg}
-              altText={card.pokemonName}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              isClickable={false}
-              onClick={() => {}}
-              matchedBy={card.matchedBy}
-              currentUserId={user?.uuid}
-            />
-          ))}
+      {/* Memory-Board NUR wenn 2 Spieler da sind UND nicht waiting */}
+      {twoPlayersReady && !waiting && (
+        <div className="board-panel glass glow">
+          <div className="cards-container">
+            {game.cards.map((card) => {
+              const byMe = card.isMatched && card.matchedBy === user?.uuid;
+              const wrapClass = card.isMatched
+                ? byMe
+                  ? "card-wrap match-me"
+                  : "card-wrap match-opp"
+                : "card-wrap";
+              return (
+                <div key={card.id} className={wrapClass}>
+                  <Card
+                    id={card.id}
+                    imageUrl={card.pokemonImg}
+                    altText={card.pokemonName}
+                    isFlipped={card.isFlipped}
+                    isMatched={card.isMatched}
+                    isClickable={
+                      gameState.isYourTurn &&
+                      !card.isFlipped &&
+                      !card.isMatched &&
+                      !game.isProcessingMatch
+                    }
+                    onClick={() => handleCardClick(card.id)}
+                    matchedBy={card.matchedBy}
+                    currentUserId={user?.uuid}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

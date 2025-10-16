@@ -109,12 +109,12 @@
 
 /* Eigene gefundene Karten */
 .card-face.matched.matched-own {
-  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border: #121212 5px solid;
 }
 
 /* Gegnerische gefundene Karten */
 .card-face.matched.matched-opponent {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: #2563e7 5px solid;
 }
 
 /* Animation für den Farbverlauf-Rahmen */
