@@ -6,6 +6,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import GamePage from "./pages/game-page/GamePage";
 import HomePage from "./pages/home-page/HomePage";
 import MultiplayerGamePage from "./pages/multiplayer-game-page/MultiplayerGamePage";
+import NotFoundPage from "./pages/not-found-page/NotFoundPage";
 
 export default function App() {
   return (
@@ -20,7 +21,7 @@ export default function App() {
               path="/multiplayer/:gameId"
               element={<MultiplayerGamePage />}
             />
-            <Route path="*" element={<h1>404: Page Not Found</h1>} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
         <Footer />
