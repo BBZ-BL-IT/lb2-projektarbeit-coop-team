@@ -7,6 +7,7 @@ import { authMiddleware } from './middleware/auth';
 import authRouter from './routes/auth';
 import healthRouter from './routes/health';
 import { SocketHandler } from './socket/SocketHandler';
+import statsRouter from './routes/stats';
 
 const app = express();
 const server = createServer(app);
@@ -38,6 +39,7 @@ app.use(authMiddleware);
 // Routes
 app.use(healthRouter);
 app.use(authRouter);
+app.use(statsRouter);
 
 // Socket.IO connection handling
 const socketHandler = new SocketHandler(io);
