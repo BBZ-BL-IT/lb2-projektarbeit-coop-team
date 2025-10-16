@@ -3,7 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import "./Navbar.css";
 
 export default function Navbar() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (

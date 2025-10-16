@@ -159,12 +159,7 @@ export default function MultiplayerGamePage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [
-    gameState?.game.status,
-    gameState?.game.playerTotalTime,
-    gameState?.game.currentTurnStartTime,
-    gameState?.game.currentPlayerIndex,
-  ]);
+  }, [gameState]);
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);

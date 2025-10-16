@@ -105,7 +105,7 @@ export default function HomePage() {
       statsController.abort();
       leaderboardController.abort();
     };
-  }, [isAuthenticated, user?.name]);
+  }, [isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -159,7 +159,7 @@ export default function HomePage() {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      }
+      },
     );
 
     socket.once("game-created", (gameId: string) => {

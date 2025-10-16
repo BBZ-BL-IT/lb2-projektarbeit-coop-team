@@ -23,7 +23,7 @@ export default function Leaderboard({
       username: `placeholder-${i}`,
       wins: NaN,
       placeholder: true,
-    })
+    }),
   );
 
   const rows = [...top, ...placeholders];

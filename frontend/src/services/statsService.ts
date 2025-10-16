@@ -24,11 +24,11 @@ function buildOptions(init?: FetchOptions): RequestInit {
 
 export async function fetchUserStats(
   username: string,
-  options?: FetchOptions
+  options?: FetchOptions,
 ): Promise<UserStats | null> {
   const response = await fetch(
     `${BASE_URL}/stats/users/${encodeURIComponent(username)}`,
-    buildOptions(options)
+    buildOptions(options),
   );
 
   if (response.status === 404) {
@@ -43,11 +43,11 @@ export async function fetchUserStats(
 }
 
 export async function fetchLeaderboard(
-  options?: FetchOptions
+  options?: FetchOptions,
 ): Promise<LeaderboardEntry[]> {
   const response = await fetch(
     `${BASE_URL}/stats/leaderboard`,
-    buildOptions(options)
+    buildOptions(options),
   );
 
   if (!response.ok) {
