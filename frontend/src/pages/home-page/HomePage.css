@@ -21,9 +21,6 @@
   background: var(--bg);
   color: var(--text);
 }
-.ambient {
-  display: none;
-}
 
 .shell {
   width: 100%;
@@ -295,4 +292,42 @@
 
 .single-player-section .game-button {
   width: var(--action-width);
+}
+
+.cards-row {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
+}
+.stats-card-col {
+  width: 25%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.main-card-col {
+  width: 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.leaderboard-card-col {
+  width: 25%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 900px) {
+  .cards-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .stats-card-col,
+  .main-card-col,
+  .leaderboard-card-col {
+    width: 100%;
+  }
 }

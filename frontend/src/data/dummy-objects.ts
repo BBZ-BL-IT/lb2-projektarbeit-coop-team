@@ -19,3 +19,10 @@ export const userStatsMock = {
 // totalGamesPlayed
 // highestScore
 // totalMatchedPairs
+
+export const leaderboardMock = [
+  { id: 1, name: "Alice", gewinnt: 40 },
+  { id: 2, name: "Bob", gewinnt: 35 },
+  { id: 3, name: "Charlie", gewinnt: 30 },
+  { id: 4, name: "Diana", gewinnt: 25 },
+];

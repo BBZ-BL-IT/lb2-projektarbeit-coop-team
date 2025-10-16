@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSocket } from "../../hooks/useSocket";
+import StatsCard from "../../components/stats-card/StatsCard";
+import Leaderboard from "../../components/leaderboard/leaderboard";
+import { leaderboardMock, userStatsMock } from "../../data/dummy-objects";
 import "./HomePage.css";
 
 export default function HomePage() {
@@ -13,6 +16,9 @@ export default function HomePage() {
   const [error, setError] = useState("");
 
   const socket = useSocket();
+
+  // StatsCard bekommt immer die Dummy-Daten
+  const stats = userStatsMock;
 
   if (isLoading) {
     return (
@@ -112,100 +118,103 @@ export default function HomePage() {
 
   return (
     <div className="home-container">
-      {/* Ambient Hintergrund */}
       <div className="ambient" />
-
-      <div className="shell">
-        <div className="welcome-section glass glow">
-          <h2 className="headline">
-            Welcome back, <span className="gradient-text">{user?.name}</span>!
-          </h2>
-          <div className="user-info">
-            <p>Email: {user?.email}</p>
-            <p>User ID: {user?.uuid}</p>
+      <div className="cards-row">
+        <div className="stats-card-col">
+          <StatsCard stats={stats} />
+        </div>
+        <div className="main-card-col">
+          {/* Der Mittelteil bleibt exakt wie bisher! */}
+          <div className="welcome-section glass glow">
+            <h2 className="headline">
+              Welcome back, <span className="gradient-text">{user?.name}</span>!
+            </h2>
+            <div className="user-info">
+              <p>Email: {user?.email}</p>
+              <p>User ID: {user?.uuid}</p>
+            </div>
+          </div>
+          {error && (
+            <div className="error-message glow error-glow">{error}</div>
+          )}
+          <div className="game-actions glass glow">
+            <h3 className="section-title">Start Playing</h3>
+            <div className="grid">
+              {/* Create */}
+              <div className="pane">
+                <h4 className="pane-title">Create New Multiplayer Game</h4>
+                <button
+                  className="game-button btn-primary"
+                  onClick={handleCreateGame}
+                  disabled={isCreatingGame}
+                >
+                  {isCreatingGame ? "Creating…" : "Create Multiplayer Game"}
+                </button>
+                <p className="hint">Instant lobby • Share the 4-digit code</p>
+              </div>
+              {/* Join */}
+              <div className="pane">
+                <h4 className="pane-title">Join Existing Multiplayer Game</h4>
+                <div className="join-game-container">
+                  <div
+                    className={`code-input-wrap ${gameCode.length === 4 ? "ok" : ""}`}
+                  >
+                    <input
+                      type="text"
+                      className="game-code-input"
+                      placeholder="0000"
+                      value={gameCode}
+                      onChange={(e) => {
+                        const value = e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 4);
+                        setGameCode(value);
+                      }}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" &&
+                        gameCode.length === 4 &&
+                        handleJoinGame()
+                      }
+                      disabled={isJoiningGame}
+                      maxLength={4}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      aria-label="Enter 4 digit game code"
+                    />
+                    <span className="code-dots" aria-hidden="true">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={i < gameCode.length ? "filled" : ""}
+                        />
+                      ))}
+                    </span>
+                  </div>
+                  <button
+                    className="game-button btn-accent"
+                    onClick={handleJoinGame}
+                    disabled={isJoiningGame || gameCode.length !== 4}
+                  >
+                    {isJoiningGame ? "Joining…" : "Join Multiplayer Game"}
+                  </button>
+                </div>
+                <p className="hint">Type the 4 digits • Press Enter to join</p>
+              </div>
+            </div>
+            <div className="divider" />
+            <div className="single-player-section">
+              <h4 className="pane-title">Single Player Practice</h4>
+              <button
+                className="game-button btn-muted"
+                onClick={() => navigate("/game/practice")}
+              >
+                Play Solo (Practice Mode)
+              </button>
+            </div>
           </div>
         </div>
-
-        {error && <div className="error-message glow error-glow">{error}</div>}
-
-        <div className="game-actions glass glow">
-          <h3 className="section-title">Start Playing</h3>
-
-          <div className="grid">
-            {/* Create */}
-            <div className="pane">
-              <h4 className="pane-title">Create New Multiplayer Game</h4>
-              <button
-                className="game-button btn-primary"
-                onClick={handleCreateGame}
-                disabled={isCreatingGame}
-              >
-                {isCreatingGame ? "Creating…" : "Create Multiplayer Game"}
-              </button>
-              <p className="hint">Instant lobby • Share the 4-digit code</p>
-            </div>
-
-            {/* Join */}
-            <div className="pane">
-              <h4 className="pane-title">Join Existing Multiplayer Game</h4>
-              <div className="join-game-container">
-                <div
-                  className={`code-input-wrap ${gameCode.length === 4 ? "ok" : ""}`}
-                >
-                  <input
-                    type="text"
-                    className="game-code-input"
-                    placeholder="0000"
-                    value={gameCode}
-                    onChange={(e) => {
-                      const value = e.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 4);
-                      setGameCode(value);
-                    }}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      gameCode.length === 4 &&
-                      handleJoinGame()
-                    }
-                    disabled={isJoiningGame}
-                    maxLength={4}
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    aria-label="Enter 4 digit game code"
-                  />
-                  <span className="code-dots" aria-hidden="true">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className={i < gameCode.length ? "filled" : ""}
-                      />
-                    ))}
-                  </span>
-                </div>
-                <button
-                  className="game-button btn-accent"
-                  onClick={handleJoinGame}
-                  disabled={isJoiningGame || gameCode.length !== 4}
-                >
-                  {isJoiningGame ? "Joining…" : "Join Multiplayer Game"}
-                </button>
-              </div>
-              <p className="hint">Type the 4 digits • Press Enter to join</p>
-            </div>
-          </div>
-
-          {/* Single player */}
-          <div className="divider" />
-          <div className="single-player-section">
-            <h4 className="pane-title">Single Player Practice</h4>
-            <button
-              className="game-button btn-muted"
-              onClick={() => navigate("/game/practice")}
-            >
-              Play Solo (Practice Mode)
-            </button>
-          </div>
+        <div className="leaderboard-card-col">
+          <Leaderboard entries={leaderboardMock} />
         </div>
       </div>
     </div>
