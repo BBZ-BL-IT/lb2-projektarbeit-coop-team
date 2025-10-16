@@ -16,16 +16,30 @@ async function bootstrap(): Promise<void> {
   const app: Express = express();
   const port = Number(process.env.PORT || 8003);
 
-  const defaultOrigins = ["http://localhost:3000", "http://frontend:3000"];
+  const defaultOrigins = ["http://localhost:8001", "http://game-service:8001"];
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((origin: string) =>
         origin.trim()
       )
     : defaultOrigins;
 
+  const allowedOriginSet = new Set(allowedOrigins.filter(Boolean));
+
   app.use(
     cors({
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+
+        if (allowedOriginSet.has(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(null, false);
+      },
       credentials: true,
     })
   );

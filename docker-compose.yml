@@ -124,7 +124,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - ALLOWED_ORIGINS=http://localhost:8001,http://game-service:8001
     depends_on:
       - mqtt-broker
       - postgres-db
