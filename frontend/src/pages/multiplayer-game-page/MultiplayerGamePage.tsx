@@ -127,7 +127,7 @@ export default function MultiplayerGamePage() {
     navigate("/");
   };
 
-  // Timer-Update – nutzt serverseitig gelieferten „total time“ + aktueller Turn
+  // Timer-Update – nutzt serverseitige total time + aktuelle Zugzeit
   useEffect(() => {
     if (!gameState || gameState.game.status !== "playing") return;
 
@@ -232,123 +232,149 @@ export default function MultiplayerGamePage() {
 
   return (
     <div className="multiplayer-game-container">
-      <div className="game-header glass glow">
-        {/* Game PIN – clean wie Join Game */}
-        <div className="game-pin-wrap">
-          <label className="game-pin-label">Game Code</label>
-          <div className="game-pin-box">{game.id}</div>
-        </div>
-
-        {/* zwei Spalten: du links, Gegner rechts */}
-        <div className="game-players">
-          {/* ME LEFT */}
-          <div className={`player-card ${isTurn(me) ? "is-turn" : ""}`}>
-            <div className="player-avatar">{initials(me?.name)}</div>
-            <div className="player-name">{me?.name || "You"}</div>
-            <div className="player-score">
-              Score: {me ? game.scores[me.id] || 0 : 0}
+      <div className="game-layout">
+        {/* Sidebar (links) */}
+        <aside className="sidebar glass">
+          <div className="sidebar-inner">
+            {/* Game Code – jetzt volle Breite */}
+            <div className="game-pin-wrap">
+              <label className="game-pin-label">Game Code</label>
+              <div className="game-pin-box">{game.id}</div>
             </div>
-            <div className="player-timer">
-              Time: {me ? formatTime(timers[me.id] || 0) : "0:00"}
-            </div>
-            {isTurn(me) && <div className="turn-tag">Your turn</div>}
-          </div>
 
-          {/* OPP RIGHT */}
-          <div className={`player-card ${isTurn(opp) ? "is-turn" : ""}`}>
-            <div className="player-avatar">{initials(opp?.name)}</div>
-            <div className="player-name">{opp?.name || "Opponent"}</div>
-            <div className="player-score">
-              Score: {opp ? game.scores[opp.id] || 0 : 0}
-            </div>
-            <div className="player-timer">
-              Time: {opp ? formatTime(timers[opp.id] || 0) : "0:00"}
-            </div>
-            {isTurn(opp) && <div className="turn-tag">Their turn</div>}
-          </div>
-        </div>
-
-        {/* Status / Finish */}
-        {game.status === "finished" ? (
-          <div
-            className={`game-result ${gameState.message?.includes("You won") ? "winner" : "loser"}`}
-          >
-            <span className="result-row">
-              <span className="result-icon" aria-hidden>
-                {gameState.message?.includes("You won") ? "🏆" : "💥"}
-              </span>
-              <span>{gameState.message}</span>
-            </span>
-            <span className="result-sub">
-              {gameState.message?.includes("You won")
-                ? "GG! That was crisp!"
-                : "Tough one. Rematch?"}
-            </span>
-            {gameState.message?.includes("You won") && (
-              <span className="confetti" aria-hidden />
-            )}
-          </div>
-        ) : (
-          <div className={`turn-indicator ${waiting ? "waiting" : ""}`}>
-            {waiting ? (
-              <>
-                Waiting for another player to join
-                <span className="dots" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </span>
-              </>
-            ) : (
-              gameState.message
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Memory-Board NUR wenn 2 Spieler da sind UND nicht waiting */}
-      {twoPlayersReady && !waiting && (
-        <div className="board-panel glass glow">
-          <div className="cards-container">
-            {game.cards.map((card) => {
-              const byMe = card.isMatched && card.matchedBy === user?.uuid;
-              const wrapClass = card.isMatched
-                ? byMe
-                  ? "card-wrap match-me"
-                  : "card-wrap match-opp"
-                : "card-wrap";
-              return (
-                <div key={card.id} className={wrapClass}>
-                  <Card
-                    id={card.id}
-                    imageUrl={card.pokemonImg}
-                    altText={card.pokemonName}
-                    isFlipped={card.isFlipped}
-                    isMatched={card.isMatched}
-                    isClickable={
-                      gameState.isYourTurn &&
-                      !card.isFlipped &&
-                      !card.isMatched &&
-                      !game.isProcessingMatch
-                    }
-                    onClick={() => handleCardClick(card.id)}
-                    matchedBy={card.matchedBy}
-                    currentUserId={user?.uuid}
-                  />
+            {/* Spieler */}
+            <div className="sidebar-players">
+              {/* Me */}
+              <div className={`player-card ${isTurn(me) ? "is-turn" : ""}`}>
+                <div className="player-avatar">{initials(me?.name)}</div>
+                <div className="player-name" title={me?.name || "You"}>
+                  {me?.name || "You"}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
-      <div className="game-controls">
-        <button
-          className="control-button leave-button"
-          onClick={handleLeaveGame}
-        >
-          Leave Game
-        </button>
+                <div className="score-row">
+                  <span className="score-label">Score</span>
+                  <span className="score-pill">
+                    {me ? game.scores[me.id] || 0 : 0}
+                  </span>
+                </div>
+
+                <div className="player-timer">
+                  Time:&nbsp;{me ? formatTime(timers[me.id] || 0) : "0:00"}
+                </div>
+
+                {isTurn(me) && <div className="turn-tag">Your turn</div>}
+              </div>
+
+              {/* Opponent */}
+              <div className={`player-card ${isTurn(opp) ? "is-turn" : ""}`}>
+                <div className="player-avatar">{initials(opp?.name)}</div>
+                <div className="player-name" title={opp?.name || "Opponent"}>
+                  {opp?.name || "Opponent"}
+                </div>
+
+                <div className="score-row">
+                  <span className="score-label">Score</span>
+                  <span className="score-pill">
+                    {opp ? game.scores[opp.id] || 0 : 0}
+                  </span>
+                </div>
+
+                <div className="player-timer">
+                  Time:&nbsp;{opp ? formatTime(timers[opp.id] || 0) : "0:00"}
+                </div>
+
+                {isTurn(opp) && <div className="turn-tag">Their turn</div>}
+              </div>
+            </div>
+
+            {/* Status / Finish */}
+            {game.status === "finished" ? (
+              <div
+                className={`game-result ${
+                  gameState.message?.includes("You won") ? "winner" : "loser"
+                }`}
+              >
+                <span className="result-row">
+                  <span className="result-icon" aria-hidden>
+                    {gameState.message?.includes("You won") ? "🏆" : "💥"}
+                  </span>
+                  <span>{gameState.message}</span>
+                </span>
+                <span className="result-sub">
+                  {gameState.message?.includes("You won")
+                    ? "GG! That was crisp!"
+                    : "Tough one. Rematch?"}
+                </span>
+              </div>
+            ) : (
+              <div
+                className={`turn-indicator ${waiting ? "waiting" : ""}`}
+                aria-live="polite"
+              >
+                {waiting ? (
+                  <>
+                    Waiting for opponent…
+                    <span className="dots" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
+                  </>
+                ) : (
+                  gameState.message
+                )}
+              </div>
+            )}
+
+            {/* Leave */}
+            <div className="sidebar-controls">
+              <button
+                className="control-button leave-button"
+                onClick={handleLeaveGame}
+              >
+                Leave Game
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* Board (rechts, zentriert) */}
+        <main className="board-col glass">
+          <div className="board-panel">
+            {twoPlayersReady && !waiting ? (
+              <div className="board-center">
+                <div className="cards-container">
+                  {game.cards.map((card) => (
+                    <div key={card.id} className="card-wrap">
+                      <Card
+                        id={card.id}
+                        imageUrl={card.pokemonImg}
+                        altText={card.pokemonName}
+                        isFlipped={card.isFlipped}
+                        isMatched={card.isMatched}
+                        isClickable={
+                          gameState.isYourTurn &&
+                          !card.isFlipped &&
+                          !card.isMatched &&
+                          !game.isProcessingMatch
+                        }
+                        onClick={() => handleCardClick(card.id)}
+                        matchedBy={card.matchedBy}
+                        currentUserId={user?.uuid}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="board-center">
+                <p className="placeholder-text">
+                  Waiting for opponent to join to start the board…
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );
