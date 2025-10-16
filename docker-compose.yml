@@ -9,7 +9,7 @@ services:
     environment:
       - REACT_APP_GAME_SERVICE_URL=http://localhost:8001
       - REACT_APP_AUTH_SERVICE_URL=http://localhost:8002
-      #      - REACT_APP_STATS_SERVICE_URL=http://localhost:8003
+      - REACT_APP_STATS_SERVICE_URL=http://localhost:8003
       - REACT_APP_WEBSOCKET_URL=ws://localhost:8001
       - CHOKIDAR_USEPOLLING=true # For hot reloading in Docker
       - WATCHPACK_POLLING=true # Alternative for webpack watching
@@ -20,7 +20,7 @@ services:
     depends_on:
       - game-service
       - auth-service
-    #      - stats-service
+      - stats-service
     networks:
       - memory-game-network
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
       - PORT=8001
       - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
       - AUTH_SERVICE_URL=http://auth-service:8002
-      #      - STATS_SERVICE_URL=http://stats-service:8003
+      - STATS_SERVICE_URL=http://stats-service:8003
       - JWT_SECRET=aVnDu6YTgvlkC3Ik1HeaOrrXFpTwwaSvWzeKpBC8TvE=
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=qVwsYUgODJ1a0w+1zQUxvAplslv7xxsih1YVB8HTXcE
@@ -109,27 +109,28 @@ services:
       - memory-game-network
     restart: unless-stopped
 
-  #  # Stats Service - runs on port 8003
-  #  stats-service:
-  #    build:
-  #      context: ./backend/stats-service
-  #      dockerfile: Dockerfile
-  #    ports:
-  #      - "8003:8003"
-  #    environment:
-  #      - NODE_ENV=development
-  #      - PORT=8003
-  #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
-  #      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-memorydb123}@postgres-db:5432/memory_game_db
-  #      - AUTH_SERVICE_URL=http://auth-service:8002
-  #      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
-  #    depends_on:
-  #      - mqtt-broker
-  #      - postgres-db
-  #      - auth-service
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
+  # Stats Service - runs on port 8003
+  stats-service:
+    build:
+      context: ./backend/stats-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+      - PORT=8003
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+    depends_on:
+      - mqtt-broker
+      - postgres-db
+    networks:
+      - memory-game-network
+    restart: unless-stopped
   #
   #  # Logging Service - runs on port 8004
   #  logging-service:
