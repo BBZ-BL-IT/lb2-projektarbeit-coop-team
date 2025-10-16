@@ -425,17 +425,17 @@ export class GameManager {
             // Gewonnen durch Zeit bei Gleichstand - verwende playerTotalTime
             const winTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
             const loseTime = Math.round((game.playerTotalTime[loser.id] || 0) / 1000);
-            return `🎉 You won! Both found ${currentPlayerScore} matches, but you were faster (${winTime}s vs ${loseTime}s)!`;
+            return ` You won! Both found ${currentPlayerScore} matches, but you were faster (${winTime}s vs ${loseTime}s)!`;
           }
-          return `🎉 You won! You found ${currentPlayerScore} matches!`;
+          return ` You won! You found ${currentPlayerScore} matches!`;
         } else {
           if (isScoreTie && game.playerTotalTime && winner) {
             // Verloren durch Zeit bei Gleichstand - verwende playerTotalTime
             const winTime = Math.round((game.playerTotalTime[game.winner] || 0) / 1000);
             const loseTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
-            return `😢 You lost! Both found ${currentPlayerScore} matches, but ${winner?.name} was faster (${winTime}s vs ${loseTime}s)`;
+            return ` You lost! Both found ${currentPlayerScore} matches, but ${winner?.name} was faster (${winTime}s vs ${loseTime}s)`;
           }
-          return `😢 You lost! ${winner?.name} won with ${winnerScore} matches (you: ${currentPlayerScore})`;
+          return ` You lost! ${winner?.name} won with ${winnerScore} matches (you: ${currentPlayerScore})`;
         }
       default:
         return '';
