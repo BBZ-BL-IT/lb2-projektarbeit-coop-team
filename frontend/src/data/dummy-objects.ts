@@ -1,6 +1,6 @@
 // Dummy Object Example
 export const userStatsMock = {
-  email: "lorenz@mail.com",
+  username: "lorenz",
   wins: 10,
   losses: 7,
   winRate: 58.82, // Calculated as (wins / totalGames) * 100
@@ -12,7 +12,7 @@ export const userStatsMock = {
 };
 
 // In the database:
-// email
+// username
 // wins
 // losses
 // totalTimePlayed
@@ -21,8 +21,8 @@ export const userStatsMock = {
 // totalMatchedPairs
 
 export const leaderboardMock = [
-  { id: 1, name: "Alice", gewinnt: 40 },
-  { id: 2, name: "Bob", gewinnt: 35 },
-  { id: 3, name: "Charlie", gewinnt: 30 },
-  { id: 4, name: "Diana", gewinnt: 25 },
+  { username: "Alice", wins: 40 },
+  { username: "Bob", wins: 35 },
+  { username: "Charlie", wins: 30 },
+  { username: "Diana", wins: 25 },
 ];

@@ -130,7 +130,7 @@ export default function HomePage() {
               Welcome back, <span className="gradient-text">{user?.name}</span>!
             </h2>
             <div className="user-info">
-              <p>Email: {user?.email}</p>
+              <p>Username: {user?.name}</p>
               <p>User ID: {user?.uuid}</p>
             </div>
           </div>

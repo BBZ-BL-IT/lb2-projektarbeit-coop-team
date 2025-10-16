@@ -20,7 +20,7 @@ interface GameEndEvent {
   matchId: string;
   winner: string;
   playerStats: Array<{
-    email: string;
+    username: string;
     score: number;
     time: number;
   }>;

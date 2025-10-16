@@ -91,7 +91,7 @@ export class GameManager {
     // MQTT Event: Spiel gestartet
     mqttService.publishGameStart({
       matchId: gameId,
-      players: game.players.map((p) => p.email),
+      players: game.players.map((p) => p.name),
       timestamp: new Date().toISOString(),
     });
   }
@@ -192,7 +192,7 @@ export class GameManager {
     const remainingPairs = Math.floor(game.cards.filter((c) => !c.isMatched).length / 2);
     mqttService.publishGameMove({
       matchId: gameId,
-      player: currentPlayer.email,
+      player: currentPlayer.name,
       flippedCard1: card1Position,
       flippedCard2: card2Position,
       match: isMatch,
@@ -483,7 +483,7 @@ export class GameManager {
       }
 
       return {
-        email: player.email,
+        username: player.name,
         score: score,
         time: Math.max(1, Math.min(playerTime, gameDuration - 1)), // Mindestens 1s, maximal gameDuration-1s
       };
@@ -491,7 +491,7 @@ export class GameManager {
 
     mqttService.publishGameEnd({
       matchId: game.id,
-      winner: game.players.find((p) => p.id === game.winner)?.email || '',
+      winner: game.players.find((p) => p.id === game.winner)?.name || '',
       playerStats: playerStats,
       duration: gameDuration,
       timestamp: new Date().toISOString(),

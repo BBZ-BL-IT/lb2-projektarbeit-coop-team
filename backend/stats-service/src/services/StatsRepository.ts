@@ -1,14 +1,14 @@
 import { executeQuery } from "../db";
 
 export interface PlayerMatchStats {
-  email: string;
+  username: string;
   score: number;
   matchDuration: number;
   isWinner: boolean;
 }
 
 interface UserStatsRow {
-  email: string;
+  username: string;
   wins: number;
   losses: number;
   total_time_played: number;
@@ -18,7 +18,7 @@ interface UserStatsRow {
 }
 
 export interface UserStats {
-  email: string;
+  username: string;
   wins: number;
   losses: number;
   winRate: number;
@@ -30,13 +30,13 @@ export interface UserStats {
 }
 
 export interface LeaderboardEntry {
-  email: string;
+  username: string;
   wins: number;
 }
 
 const UPSERT_USER_STATS_SQL = `
   INSERT INTO user_stats (
-    email,
+    username,
     wins,
     losses,
     total_time_played,
@@ -44,7 +44,7 @@ const UPSERT_USER_STATS_SQL = `
     highest_score,
     total_matched_pairs
   ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-  ON CONFLICT (email) DO UPDATE SET
+  ON CONFLICT (username) DO UPDATE SET
     wins = user_stats.wins + EXCLUDED.wins,
     losses = user_stats.losses + EXCLUDED.losses,
     total_time_played = user_stats.total_time_played + EXCLUDED.total_time_played,
@@ -55,7 +55,7 @@ const UPSERT_USER_STATS_SQL = `
 `;
 
 const GET_ALL_STATS_SQL = `
-  SELECT email,
+  SELECT username,
          wins,
          losses,
          total_time_played,
@@ -66,8 +66,8 @@ const GET_ALL_STATS_SQL = `
     ORDER BY wins DESC, highest_score DESC;
 `;
 
-const GET_STATS_BY_EMAIL_SQL = `
-  SELECT email,
+const GET_STATS_BY_USERNAME_SQL = `
+  SELECT username,
          wins,
          losses,
          total_time_played,
@@ -75,11 +75,11 @@ const GET_STATS_BY_EMAIL_SQL = `
          highest_score,
          total_matched_pairs
     FROM user_stats
-   WHERE email = $1;
+   WHERE username = $1;
 `;
 
 const GET_LEADERBOARD_SQL = `
-  SELECT email,
+  SELECT username,
          wins
     FROM user_stats
     ORDER BY wins DESC, highest_score DESC
@@ -97,7 +97,7 @@ export async function upsertUserStatsForMatch(
   const score = playerStats.score ?? 0;
 
   await executeQuery<UserStatsRow>(UPSERT_USER_STATS_SQL, [
-    playerStats.email,
+    playerStats.username,
     winsIncrement,
     lossesIncrement,
     timePlayed,
@@ -119,7 +119,7 @@ function mapRow(row: UserStatsRow): UserStats {
     : 0;
 
   return {
-    email: row.email,
+    username: row.username,
     wins: row.wins,
     losses: row.losses,
     winRate,
@@ -136,11 +136,11 @@ export async function getAllUserStats(): Promise<UserStats[]> {
   return rows.map(mapRow);
 }
 
-export async function getUserStatsByEmail(
-  email: string
+export async function getUserStatsByUsername(
+  username: string
 ): Promise<UserStats | null> {
-  const rows = await executeQuery<UserStatsRow>(GET_STATS_BY_EMAIL_SQL, [
-    email,
+  const rows = await executeQuery<UserStatsRow>(GET_STATS_BY_USERNAME_SQL, [
+    username,
   ]);
   const row = rows[0];
   return row ? mapRow(row) : null;

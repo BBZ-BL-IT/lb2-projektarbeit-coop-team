@@ -1,7 +1,7 @@
 import "./StatsCard.css";
 
 export type UserStats = {
-  email: string;
+  username: string;
   wins: number;
   losses: number;
   winRate?: number;
@@ -150,7 +150,7 @@ export default function StatsCard({ stats }: { stats: UserStats }) {
     <section className="pane stats-card">
       <header className="stats-header">
         <div className="stats-title">Your Stats</div>
-        <div className="stats-email">{stats.email}</div>
+        <div className="stats-username">{stats.username}</div>
       </header>
 
       <div className="stats-grid stats-layout-fixed">

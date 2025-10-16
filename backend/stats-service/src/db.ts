@@ -52,7 +52,7 @@ export async function executeQuery<
 export async function initializeDatabase(): Promise<void> {
   const createTableSql = `
     CREATE TABLE IF NOT EXISTS user_stats (
-      email TEXT PRIMARY KEY,
+      username TEXT PRIMARY KEY,
       wins INTEGER NOT NULL DEFAULT 0,
       losses INTEGER NOT NULL DEFAULT 0,
       total_time_played INTEGER NOT NULL DEFAULT 0,
@@ -62,6 +62,22 @@ export async function initializeDatabase(): Promise<void> {
     );
   `;
 
+  const migrateUsernameColumnSql = `
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'user_stats'
+          AND column_name = 'email'
+      ) THEN
+        ALTER TABLE user_stats RENAME COLUMN email TO username;
+      END IF;
+    END
+    $$;
+  `;
+
   await executeQuery(createTableSql);
+  await executeQuery(migrateUsernameColumnSql);
   console.log("Ensured user_stats table exists.");
 }

@@ -5,7 +5,7 @@ interface GameEndEventPayload {
   matchId: string;
   winner: string;
   playerStats: Array<{
-    email: string;
+    username: string;
     score: number;
     time?: number;
   }>;
@@ -97,15 +97,15 @@ export class MqttSubscriber {
       : 0;
 
     const updates: Promise<unknown>[] = message.playerStats
-      .filter((player) => Boolean(player.email))
+      .filter((player) => Boolean(player.username))
       .map((player) => {
         const playerScore = Number.isFinite(player.score) ? player.score : 0;
 
         const playerStats: PlayerMatchStats = {
-          email: player.email,
+          username: player.username,
           score: playerScore,
           matchDuration,
-          isWinner: player.email === message.winner,
+          isWinner: player.username === message.winner,
         };
 
         return upsertUserStatsForMatch(playerStats);

@@ -8,7 +8,7 @@ import "./MultiplayerGamePage.css";
 interface Player {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   socketId: string;
   isReady: boolean;
 }

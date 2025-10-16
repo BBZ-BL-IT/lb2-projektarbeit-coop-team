@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import {
   getAllUserStats,
   getLeaderboard,
-  getUserStatsByEmail,
+  getUserStatsByUsername,
 } from "../services/StatsRepository";
 
 const router = Router();
@@ -31,9 +31,9 @@ router.get("/leaderboard", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/stats/:email", async (req: Request, res: Response) => {
+router.get("/stats/:username", async (req: Request, res: Response) => {
   try {
-    const stat = await getUserStatsByEmail(req.params.email);
+    const stat = await getUserStatsByUsername(req.params.username);
     if (!stat) {
       res.status(404).json({ message: "Stats not found for this user." });
       return;
@@ -41,7 +41,7 @@ router.get("/stats/:email", async (req: Request, res: Response) => {
 
     res.json(stat);
   } catch (error) {
-    console.error("Failed to fetch stats by email:", error);
+    console.error("Failed to fetch stats by username:", error);
     res.status(500).json({ message: "Failed to fetch stats for this user." });
   }
 });

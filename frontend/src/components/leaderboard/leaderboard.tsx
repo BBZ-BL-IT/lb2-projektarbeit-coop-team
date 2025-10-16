@@ -1,9 +1,8 @@
 import "./leaderboard.css";
 
 export type LeaderboardEntry = {
-  id: number | string;
-  name: string;
-  gewinnt: number; // Anzahl gewonnener Spiele
+  username: string;
+  wins: number;
 };
 
 export default function Leaderboard({
@@ -16,16 +15,15 @@ export default function Leaderboard({
   maxRows?: number;
 }) {
   // Sortierung: absteigend nach Gewinnen
-  const sorted = [...entries].sort((a, b) => b.gewinnt - a.gewinnt);
+  const sorted = [...entries].sort((a, b) => b.wins - a.wins);
   const top = sorted.slice(0, maxRows);
 
   // ggf. mit Platzhaltern auffüllen
   const placeholdersCount = Math.max(0, maxRows - top.length);
   const placeholders = Array.from({ length: placeholdersCount }).map(
     (_, i) => ({
-      id: `placeholder-${i}`,
-      name: "--",
-      gewinnt: NaN,
+      username: `placeholder-${i}`,
+      wins: NaN,
       placeholder: true,
     }),
   );
@@ -51,18 +49,18 @@ export default function Leaderboard({
             <div
               className={`leaderboard-entry ${isPlaceholder ? "placeholder" : ""}`}
               role="listitem"
-              key={row.id}
+              key={row.username || rank}
             >
               <RankBadge rank={rank} />
               <div
                 className={`leaderboard-name ${isPlaceholder ? "muted" : ""}`}
               >
-                {row.name}
+                {isPlaceholder ? "--" : row.username}
               </div>
               <div
                 className={`leaderboard-score ${isPlaceholder ? "muted" : ""}`}
               >
-                {isPlaceholder ? "--" : `${row.gewinnt} wins`}
+                {isPlaceholder ? "--" : `${row.wins} wins`}
               </div>
             </div>
           );
