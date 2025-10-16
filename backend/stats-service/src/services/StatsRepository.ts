@@ -21,10 +21,17 @@ export interface UserStats {
   email: string;
   wins: number;
   losses: number;
+  winRate: number;
   totalTimePlayed: number;
   totalGamesPlayed: number;
+  averageGameDuration: number;
   highestScore: number;
   totalMatchedPairs: number;
+}
+
+export interface LeaderboardEntry {
+  email: string;
+  wins: number;
 }
 
 const UPSERT_USER_STATS_SQL = `
@@ -71,6 +78,14 @@ const GET_STATS_BY_EMAIL_SQL = `
    WHERE email = $1;
 `;
 
+const GET_LEADERBOARD_SQL = `
+  SELECT email,
+         wins
+    FROM user_stats
+    ORDER BY wins DESC, highest_score DESC
+    LIMIT $1;
+`;
+
 export async function upsertUserStatsForMatch(
   playerStats: PlayerMatchStats
 ): Promise<void> {
@@ -93,12 +108,24 @@ export async function upsertUserStatsForMatch(
 }
 
 function mapRow(row: UserStatsRow): UserStats {
+  const totalGames = row.total_games_played || row.wins + row.losses;
+  const safeTotalGames = totalGames > 0 ? totalGames : row.wins + row.losses;
+  const computedTotalGames = safeTotalGames > 0 ? safeTotalGames : 0;
+  const winRate = computedTotalGames
+    ? Number(((row.wins / computedTotalGames) * 100).toFixed(2))
+    : 0;
+  const averageGameDuration = computedTotalGames
+    ? Math.round(row.total_time_played / computedTotalGames)
+    : 0;
+
   return {
     email: row.email,
     wins: row.wins,
     losses: row.losses,
+    winRate,
     totalTimePlayed: row.total_time_played,
-    totalGamesPlayed: row.total_games_played,
+    totalGamesPlayed: computedTotalGames,
+    averageGameDuration,
     highestScore: row.highest_score,
     totalMatchedPairs: row.total_matched_pairs,
   };
@@ -117,4 +144,13 @@ export async function getUserStatsByEmail(
   ]);
   const row = rows[0];
   return row ? mapRow(row) : null;
+}
+
+export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+  const safeLimit =
+    Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10;
+  const rows = await executeQuery<LeaderboardEntry>(GET_LEADERBOARD_SQL, [
+    safeLimit,
+  ]);
+  return [...rows].sort((a, b) => b.wins - a.wins);
 }
