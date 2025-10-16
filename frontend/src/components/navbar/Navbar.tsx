@@ -40,9 +40,6 @@ export default function Navbar() {
             </button>
           ) : (
             <>
-              {user && (
-                <span className="welcome-text">Welcome, {user.name}!</span>
-              )}
               <button
                 className="navbar-button"
                 onClick={() =>
