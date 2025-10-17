@@ -118,6 +118,37 @@
 /* Board-Panel */
 .sp-board {
   padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.sp-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("../../assets/backgrounds/pixel-meadow.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 0.55;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: saturate(1.05);
+  z-index: 0;
+  border-radius: inherit;
+}
+.sp-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    185deg,
+    rgba(255, 255, 255, 0.48) 0%,
+    rgba(255, 255, 255, 0.4) 38%,
+    rgba(255, 255, 255, 0.52) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
 }
 
 /* Karten-Grid – harmoniert mit Card.css (10vh Karten) */
@@ -127,6 +158,8 @@
   grid-template-columns: repeat(4, auto);
   gap: 1.1rem;
   padding: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Hover-Shadow dezent */
