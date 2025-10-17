@@ -35,7 +35,7 @@ function getClient(): pg.Client {
 }
 
 export async function executeQuery<
-  T extends pg.QueryResultRow = pg.QueryResultRow
+  T extends pg.QueryResultRow = pg.QueryResultRow,
 >(sql: string, params: Array<string | number | boolean> = []): Promise<T[]> {
   const dbClient = getClient();
   return new Promise((resolve, reject) => {

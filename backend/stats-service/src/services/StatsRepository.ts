@@ -87,7 +87,7 @@ const GET_LEADERBOARD_SQL = `
 `;
 
 export async function upsertUserStatsForMatch(
-  playerStats: PlayerMatchStats
+  playerStats: PlayerMatchStats,
 ): Promise<void> {
   const winsIncrement = playerStats.isWinner ? 1 : 0;
   const lossesIncrement = playerStats.isWinner ? 0 : 1;
@@ -137,7 +137,7 @@ export async function getAllUserStats(): Promise<UserStats[]> {
 }
 
 export async function getUserStatsByUsername(
-  username: string
+  username: string,
 ): Promise<UserStats | null> {
   const rows = await executeQuery<UserStatsRow>(GET_STATS_BY_USERNAME_SQL, [
     username,

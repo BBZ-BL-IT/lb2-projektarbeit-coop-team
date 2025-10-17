@@ -68,7 +68,7 @@ export class MqttSubscriber {
         } else {
           console.log(`Subscribed to topic pattern: ${this.topicPattern}`);
         }
-      }
+      },
     );
   }
 
@@ -85,7 +85,7 @@ export class MqttSubscriber {
 
   private async processGameEndMessage(
     topic: string,
-    message: GameEndEventPayload
+    message: GameEndEventPayload,
   ): Promise<void> {
     if (!message.matchId || !Array.isArray(message.playerStats)) {
       console.warn(`Received invalid game end message on topic ${topic}`);
@@ -113,7 +113,7 @@ export class MqttSubscriber {
 
     await Promise.all(updates);
     console.log(
-      `Processed match ${message.matchId}, updated ${updates.length} player stats.`
+      `Processed match ${message.matchId}, updated ${updates.length} player stats.`,
     );
   }
 }

@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
   const defaultOrigins = ["http://localhost:8001", "http://game-service:8001"];
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((origin: string) =>
-        origin.trim()
+        origin.trim(),
       )
     : defaultOrigins;
 
@@ -41,7 +41,7 @@ async function bootstrap(): Promise<void> {
         callback(null, false);
       },
       credentials: true,
-    })
+    }),
   );
 
   app.use(express.json());

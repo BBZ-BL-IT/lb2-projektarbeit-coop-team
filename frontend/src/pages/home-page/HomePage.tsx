@@ -159,7 +159,7 @@ export default function HomePage() {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      }
+      },
     );
 
     socket.once("game-created", (gameId: string) => {
