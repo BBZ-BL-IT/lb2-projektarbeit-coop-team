@@ -1,7 +1,15 @@
-#FROM node:18-alpine
-#WORKDIR /app
-#COPY package*.json ./
-#RUN npm install
-#COPY . .
-#RUN npm run build
-#CMD ["npm", "start"]
+# Dockerfile für Node.js + TypeScript mit Hot Reloading
+FROM node:18-alpine
+
+# Arbeitsverzeichnis im Container
+WORKDIR /app
+
+# package.json & package-lock.json kopieren und Abhängigkeiten installieren
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# gesamten Quellcode kopieren
+COPY . .
+
+# Dev-Server mit Hot Reloading starten
+CMD ["npm", "run", "dev"]
