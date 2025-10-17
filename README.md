@@ -14,7 +14,6 @@ Then edit `.env` with your secure values:
 
 - `POSTGRES_PASSWORD`: Secure password for PostgreSQL database
 - `JWT_SECRET`: Strong secret key for JWT token signing (use a long, random string)
-- `SA_WEB_LOGIN_COOKIE_JWT_SIGNINGKEY`: Simple-auth JWT signing key (should match JWT_SECRET)
 
 **Important:** Never commit `.env` to version control - it's already in `.gitignore`. Use strong, unique passwords and keys in production.
 
@@ -30,7 +29,7 @@ openssl rand -base64 32
 Then run the following command to start the development server:
 
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
 ## Available Ports
@@ -40,14 +39,12 @@ After starting the application, the following services will be available:
 - **Frontend (React App)**: http://localhost:3000
 - **Game Service**: http://localhost:8001
 - **Authentication Service**: http://localhost:8002
-- **Stats Service**: http://localhost:8003
-- **Logs Service**: http://localhost:8004
-- **Database Administration (Adminer)**: http://localhost:8080
-- **PostgreSQL Database**: localhost:5432
+- **Database Administration (Adminer)**: [http://localhost:8080](http://localhost:8080/?pgsql=postgres-db&username=postgres&db=memory_game_db)
+- **PostgreSQL Database**: http://localhost:5432
 
 ## Database Administration
 
-You can access Adminer (database administration) at http://localhost:8080/?pgsql=postgres-db&username=postgres&db=memory_game_db
+You can access Adminer (database administration) at [http://localhost:8080](http://localhost:8080/?pgsql=postgres-db&username=postgres&db=memory_game_db)
 
 Just enter your password and click "Login".
 
@@ -56,7 +53,7 @@ Just enter your password and click "Login".
 Start (To run container in background and regain terminal without seeing logs of running session)
 
 ```bash
-docker-compose up -d --build
+docker-compose up -d
 ```
 
 Stop (Stops container -> Not the same as stopping container with ctrl + c when using default command)
