@@ -125,7 +125,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("../../assets/backgrounds/pixel-meadow.svg");
+  background-image: url("../../../public/background.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
