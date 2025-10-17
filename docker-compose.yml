@@ -49,9 +49,12 @@ services:
       - ./backend/game-service:/app # Mount source code for hot reloading
       - /app/node_modules # Exclude node_modules from volume mount
     depends_on:
-      - mqtt-broker
-      - auth-service
-      - postgres-db
+      mqtt-broker:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
     networks:
       - memory-game-network
     restart: unless-stopped
@@ -131,8 +134,10 @@ services:
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - ALLOWED_ORIGINS=http://${EXTERNAL_HOST:-localhost}:${GAME_SERVICE_PORT:-8001},http://${GAME_SERVICE_HOST:-game-service}:${GAME_SERVICE_PORT:-8001}
     depends_on:
-      - mqtt-broker
-      - postgres-db
+      mqtt-broker:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
     networks:
       - memory-game-network
     restart: unless-stopped
