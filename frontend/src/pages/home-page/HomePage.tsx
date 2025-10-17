@@ -123,10 +123,8 @@ export default function HomePage() {
       <div className="home-container">
         <div className="ambient" />
         <div className="shell">
-          <h2 className="headline">Bitte einloggen, um fortzufahren</h2>
-          <p className="subtle">
-            Du brauchst ein Konto, um Multiplayer zu nutzen.
-          </p>
+          <h2 className="headline">Please log in to continue</h2>
+          <p className="subtle">You need an account to use multiplayer.</p>
         </div>
       </div>
     );
@@ -159,7 +157,7 @@ export default function HomePage() {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      },
+      }
     );
 
     socket.once("game-created", (gameId: string) => {
@@ -216,14 +214,14 @@ export default function HomePage() {
           )}
         </div>
         <div className="main-card-col">
-          {/* Der Mittelteil bleibt exakt wie bisher! */}
+          {/* The middle section remains exactly as before! */}
           <div className="welcome-section glass glow">
             <h2 className="headline">
               Welcome back, <span className="gradient-text">{user?.name}</span>!
             </h2>
             <div className="user-info">
-              <p>Username: {user?.name}</p>
-              <p>User ID: {user?.uuid}</p>
+              <div>Username: {user?.name}</div>
+              <div>Email Address: {user?.email}</div>
             </div>
           </div>
           {error && (
