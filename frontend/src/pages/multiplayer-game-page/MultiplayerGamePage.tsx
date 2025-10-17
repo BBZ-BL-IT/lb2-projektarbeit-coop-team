@@ -61,6 +61,13 @@ export default function MultiplayerGamePage() {
       navigate("/");
       return;
     }
+
+    // Überprüfe ob gameId gültig ist
+    if (!gameId || gameId.trim() === "") {
+      navigate("/game-not-found");
+      return;
+    }
+
     if (!socket) {
       setError("Unable to connect to game server");
       return;
@@ -94,7 +101,17 @@ export default function MultiplayerGamePage() {
     socket.on("player-joined", () => {});
     socket.on("player-left", () => {});
     socket.on("game-finished", () => {});
-    socket.on("game-error", (errorMessage: string) => setError(errorMessage));
+    socket.on("game-error", (errorMessage: string) => {
+      // Überprüfe ob es sich um einen "Game not found" Fehler handelt
+      if (
+        errorMessage.includes("Game not found") ||
+        errorMessage.includes("not found")
+      ) {
+        navigate("/game-not-found");
+      } else {
+        setError(errorMessage);
+      }
+    });
 
     socket.emit("authenticate", {
       uuid: user.uuid,
@@ -194,14 +211,17 @@ export default function MultiplayerGamePage() {
   if (error) {
     return (
       <div className="multiplayer-game-container">
-        <div className="error-message">Error: {error}</div>
-        <div className="game-controls">
-          <button
-            className="control-button leave-button"
-            onClick={() => navigate("/")}
-          >
-            Back to Home
-          </button>
+        <div className="error-container glass">
+          <div className="error-content">
+            <h2 className="error-title">Unable to Join Game</h2>
+            <p className="error-message">{error}</p>
+            <button
+              className="control-button leave-button"
+              onClick={() => navigate("/")}
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
       </div>
     );

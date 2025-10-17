@@ -101,7 +101,16 @@ export class SocketHandler {
           console.log(
             `Join failed for game ${gameId}. Game exists: ${!!game}, Status: ${game?.status}, Players: ${game?.players.length}`,
           );
-          socket.emit('game-error', 'Cannot join game - game full, not found, or already started');
+
+          if (!game) {
+            socket.emit('game-error', 'Game not found - please check the game PIN');
+          } else if (game.players.length >= 2) {
+            socket.emit('game-error', 'Game is full - maximum 2 players allowed');
+          } else if (game.status !== 'waiting') {
+            socket.emit('game-error', 'Game has already started or finished');
+          } else {
+            socket.emit('game-error', 'Cannot join game');
+          }
         }
       } catch (error) {
         console.error('Error joining game:', error);
