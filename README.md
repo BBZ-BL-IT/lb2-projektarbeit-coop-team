@@ -61,3 +61,61 @@ Stop (Stops container -> Not the same as stopping container with ctrl + c when u
 ```bash
 docker-compose down
 ```
+
+# Distributed Memory Game – Architecture & Functionality
+
+This project is a **distributed, event-driven multiplayer memory game**.  
+Multiple Dockerized services communicate via **HTTP, WebSockets, PostgreSQL, and MQTT**.
+
+---
+
+## Architecture Overview
+
+<img width="1600" height="1327" alt="image" src="https://github.com/user-attachments/assets/63dc7c4c-b8c6-4945-b698-816c0104a043" />
+
+
+---
+
+## System Components
+
+**Frontend Webserver (Container):**  
+Displays the user interface and maintains a WebSocket connection to the Game Service.  
+
+**Game Service (Container):**  
+Handles core game logic and real-time gameplay. Communicates via MQTT and WebSockets.  
+
+**Stats Service (Container):**  
+Manages and stores player statistics. Subscribes to MQTT events.  
+
+**Logging Service (Container):**  
+Receives game and statistics logs via MQTT and writes them to local log files.  
+
+**Authentication Service (Container, zix99/simple-auth):**  
+Handles user management, login, and registration. Issues JSON Web Tokens (JWT) and stores user data in the PostgreSQL database.  
+
+**Postgres DB Service (Container, postgres):**  
+Stores authentication and player statistics data. Serves as the system’s single source of truth.  
+
+---
+
+## Technology Stack
+
+- **Frontend / UI:** React, TypeScript, CSS, WebSockets  
+- **Backend / Services:** Node.js (TypeScript) – Game, Stats, and Logging Services  
+- **Messaging / Broker:** MQTT Broker (event-driven communication)  
+- **Database:** PostgreSQL  
+- **Authentication:** simple-auth (JWT-based sessions)  
+- **Logging:** File-based logs handled by the Logging Service  
+
+---
+
+## How It Works
+
+1. **Login:** Auth Service issues JWT → stored as cookie in frontend  
+2. **Gameplay:** Game Service creates lobby, manages turns & scores  
+3. **Realtime:** Socket.IO updates both players with game state  
+4. **Game End:** Game Service publishes `game/{id}/end` via MQTT  
+   - **Stats Service:** updates player stats in Postgres  
+   - **Log Service:** saves event history as JSON  
+
+---
