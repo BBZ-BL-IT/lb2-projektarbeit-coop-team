@@ -29,6 +29,7 @@ function buildDeck(): GameCard[] {
 export default function GamePage() {
   const navigate = useNavigate();
   const [gameCards, setGameCards] = useState<GameCard[]>([]);
+  const [gameKey, setGameKey] = useState(0);
 
   useEffect(() => {
     setGameCards(buildDeck());
@@ -37,6 +38,7 @@ export default function GamePage() {
   const handleReplay = () => {
     // nur neu mischen – keine extra Spiel-Logik
     setGameCards(buildDeck());
+    setGameKey((prev) => prev + 1);
   };
 
   const handleExit = () => {
@@ -70,7 +72,7 @@ export default function GamePage() {
           <div className="cards-container">
             {gameCards.map((card) => (
               <Card
-                key={card.id}
+                key={`${gameKey}-${card.id}`}
                 imageUrl={card.pokemon.img}
                 altText={card.pokemon.name}
               />

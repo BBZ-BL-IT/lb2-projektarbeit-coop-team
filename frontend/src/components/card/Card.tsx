@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Card.css";
 
 interface CardProps {
@@ -26,6 +26,11 @@ export default function Card({
   currentUserId,
 }: CardProps) {
   const [internalIsFlipped, setInternalIsFlipped] = useState(false);
+
+  // Reset des internen Zustands wenn sich die imageUrl ändert (neues Spiel)
+  useEffect(() => {
+    setInternalIsFlipped(false);
+  }, [imageUrl]);
 
   // Flip-Status (extern für Multiplayer, intern für Singleplayer)
   const isFlipped =
