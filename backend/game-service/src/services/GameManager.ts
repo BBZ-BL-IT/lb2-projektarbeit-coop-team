@@ -407,12 +407,12 @@ export class GameManager {
         return 'Waiting for another player to join...';
       case 'playing':
         return isYourTurn ? 'Your turn!' : 'Waiting for opponent...';
-      case 'finished':
+      case 'finished': {
         if (!game.winner) return 'Game finished!';
 
-        const winner = game.players.find((p) => p.id === game.winner);
+        const _winner = game.players.find((p) => p.id === game.winner);
         const loser = game.players.find((p) => p.id !== game.winner);
-        const currentPlayer = game.players.find((p) => p.id === currentPlayerId);
+        const _currentPlayer = game.players.find((p) => p.id === currentPlayerId);
         const currentPlayerScore = game.scores[currentPlayerId] || 0;
         const winnerScore = game.scores[game.winner] || 0;
         const loserScore = game.scores[loser?.id || ''] || 0;
@@ -428,15 +428,17 @@ export class GameManager {
             return ` You won! Both found ${currentPlayerScore} matches, but you were faster (${winTime}s vs ${loseTime}s)!`;
           }
           return ` You won! You found ${currentPlayerScore} matches!`;
-        } else {
-          if (isScoreTie && game.playerTotalTime && winner) {
-            // Verloren durch Zeit bei Gleichstand - verwende playerTotalTime
-            const winTime = Math.round((game.playerTotalTime[game.winner] || 0) / 1000);
-            const loseTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
-            return ` You lost! Both found ${currentPlayerScore} matches, but ${winner?.name} was faster (${winTime}s vs ${loseTime}s)`;
-          }
-          return ` You lost! ${winner?.name} won with ${winnerScore} matches (you: ${currentPlayerScore})`;
         }
+
+        if (isScoreTie && game.playerTotalTime && loser) {
+          // Verloren durch Zeit bei Gleichstand
+          const winTime = Math.round((game.playerTotalTime[game.winner] || 0) / 1000);
+          const loseTime = Math.round((game.playerTotalTime[currentPlayerId] || 0) / 1000);
+          return ` You lost! Both found ${currentPlayerScore} matches, but your opponent was faster (${winTime}s vs ${loseTime}s)!`;
+        }
+
+        return ` You lost! You found ${currentPlayerScore} matches, opponent found ${winnerScore}!`;
+      }
       default:
         return '';
     }

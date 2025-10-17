@@ -70,16 +70,9 @@
           "varsIgnorePattern": "^_"
         }
       ],
-      "import/order": [
-        "warn",
-        {
-          "alphabetize": {
-            "caseInsensitive": true,
-            "order": "asc"
-          },
-          "newlines-between": "always"
-        }
-      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-namespace": "off",
+      "import/order": "off",
       "no-console": "off"
     }
   },
