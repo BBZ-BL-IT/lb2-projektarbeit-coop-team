@@ -6,17 +6,20 @@ import { Server } from 'socket.io';
 import { authMiddleware } from './middleware/auth';
 import authRouter from './routes/auth';
 import healthRouter from './routes/health';
-import { SocketHandler } from './socket/SocketHandler';
 import statsRouter from './routes/stats';
+import { SocketHandler } from './socket/SocketHandler';
 
 const app = express();
 const server = createServer(app);
-const PORT = 8001;
+const PORT = process.env.PORT || 8001;
 
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:3000', 'http://frontend:3000'],
+    origin: [
+      `http://${process.env.EXTERNAL_HOST || 'localhost'}:${process.env.FRONTEND_PORT || '3000'}`,
+      `http://${process.env.FRONTEND_HOST || 'frontend'}:${process.env.FRONTEND_PORT || '3000'}`,
+    ],
     credentials: true,
   },
   allowEIO3: true,
@@ -25,7 +28,10 @@ const io = new Server(server, {
 // Middlewares
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://localhost:8002'], // Allow both frontend and auth service
+    origin: [
+      `http://${process.env.EXTERNAL_HOST || 'localhost'}:${process.env.FRONTEND_PORT || '3000'}`,
+      `http://${process.env.EXTERNAL_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || '8002'}`,
+    ], // Allow both frontend and auth service
     credentials: true, // Important for cookies
   }),
 );

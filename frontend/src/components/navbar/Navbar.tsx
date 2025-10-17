@@ -34,7 +34,11 @@ export default function Navbar() {
           {!isAuthenticated ? (
             <button
               className="navbar-button"
-              onClick={() => (window.location.href = "http://localhost:8002")}
+              onClick={() =>
+                (window.location.href =
+                  process.env.REACT_APP_AUTH_SERVICE_URL ||
+                  "http://localhost:8002")
+              }
             >
               Sign In
             </button>
@@ -43,7 +47,7 @@ export default function Navbar() {
               <button
                 className="navbar-button"
                 onClick={() =>
-                  (window.location.href = "http://localhost:8002/#/manage")
+                  (window.location.href = `${process.env.REACT_APP_AUTH_SERVICE_URL || "http://localhost:8002"}/#/manage`)
                 }
               >
                 Manage Account

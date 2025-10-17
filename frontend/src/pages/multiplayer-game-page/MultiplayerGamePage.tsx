@@ -84,12 +84,12 @@ export default function MultiplayerGamePage() {
           setError(data.error || "Authentication failed");
           setIsConnecting(false);
         }
-      },
+      }
     );
 
     socket.on("game-joined", () => setError(""));
     socket.on("game-state-updated", (newGameState: GameState) =>
-      setGameState(newGameState),
+      setGameState(newGameState)
     );
     socket.on("player-joined", () => {});
     socket.on("player-left", () => {});
@@ -144,11 +144,11 @@ export default function MultiplayerGamePage() {
           gameState.game.currentTurnStartTime
         ) {
           const currentTurnStart = new Date(
-            gameState.game.currentTurnStartTime,
+            gameState.game.currentTurnStartTime
           ).getTime();
           const currentTurnTime = now - currentTurnStart;
           newTimers[player.id] = Math.floor(
-            (totalTime + currentTurnTime) / 1000,
+            (totalTime + currentTurnTime) / 1000
           );
         } else {
           newTimers[player.id] = Math.floor(totalTime / 1000);
@@ -297,7 +297,7 @@ export default function MultiplayerGamePage() {
                 </span>
                 <span className="result-sub">
                   {gameState.message?.includes("You won")
-                    ? "GG! That was crisp!"
+                    ? "GG! That was good!"
                     : "Tough one. Rematch?"}
                 </span>
               </div>

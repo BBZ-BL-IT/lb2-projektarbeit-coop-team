@@ -16,7 +16,7 @@ export const useSocket = (): Socket | null => {
     }
 
     if (!globalSocket) {
-      // WebSocket URL aus Umgebungsvariablen oder fallback
+      // WebSocket URL aus Umgebungsvariablen
       const socketUrl =
         process.env.REACT_APP_WEBSOCKET_URL || "ws://localhost:8001";
 
