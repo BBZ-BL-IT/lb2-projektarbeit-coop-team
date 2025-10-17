@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../../components/card/Card";
 import { pokemons } from "../../pokemons";
-import "./GamePage.css";
+import "./PracticePage.css";
 
 interface GameCard {
   id: string;
@@ -26,7 +26,7 @@ function buildDeck(): GameCard[] {
   return pairs.sort(() => Math.random() - 0.5);
 }
 
-export default function GamePage() {
+export default function PracticePage() {
   const navigate = useNavigate();
   const [gameCards, setGameCards] = useState<GameCard[]>([]);
   const [gameKey, setGameKey] = useState(0);

@@ -1,12 +1,12 @@
-import "./HomePage.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Leaderboard from "../../components/leaderboard/leaderboard";
+import StatsCard from "../../components/stats-card/StatsCard";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSocket } from "../../hooks/useSocket";
-import StatsCard from "../../components/stats-card/StatsCard";
-import Leaderboard from "../../components/leaderboard/leaderboard";
-import { LeaderboardEntry, UserStats } from "../../types/stats";
 import { fetchLeaderboard, fetchUserStats } from "../../services/statsService";
+import { LeaderboardEntry, UserStats } from "../../types/stats";
+import "./HomePage.css";
 
 export default function HomePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -159,7 +159,7 @@ export default function HomePage() {
           setError(data.error || "Authentication failed");
           setIsCreatingGame(false);
         }
-      },
+      }
     );
 
     socket.once("game-created", (gameId: string) => {
@@ -298,7 +298,7 @@ export default function HomePage() {
               <h4 className="pane-title">Single Player Practice</h4>
               <button
                 className="game-button btn-muted"
-                onClick={() => navigate("/game/practice")}
+                onClick={() => navigate("/practice")}
               >
                 Play Solo (Practice Mode)
               </button>
