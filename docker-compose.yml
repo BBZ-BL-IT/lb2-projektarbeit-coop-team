@@ -129,27 +129,27 @@ services:
     networks:
       - memory-game-network
     restart: unless-stopped
-  #
-  #  # Log Service - runs on port 8004
-  #  log-service:
-  #    build:
-  #      context: ./backend/log-service
-  #      dockerfile: Dockerfile
-  #    ports:
-  #      - "8004:8004"
-  #    environment:
-  #      - NODE_ENV=development
-  #      - PORT=8004
-  #      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
-  #      - LOG_DIRECTORY=/app/logs
-  #    volumes:
-  #      - ./logs:/app/logs
-  #    depends_on:
-  #      - mqtt-broker
-  #    networks:
-  #      - memory-game-network
-  #    restart: unless-stopped
-  #
+
+  # Log Service - MQTT-to-JSON Logger (kein HTTP-Server)
+  log-service:
+    build:
+      context: ./backend/log-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - DOCKER_ENV=true
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - LOG_DIRECTORY=/app/logs
+    volumes:
+      - ./backend/log-service:/app # Mount source code for hot reloading
+      - /app/node_modules # Exclude node_modules from volume mount
+      - ./backend/log-service/logs:/app/logs # Mount log directory to persist logs
+    depends_on:
+      - mqtt-broker
+    networks:
+      - memory-game-network
+    restart: unless-stopped
+
   # MQTT Broker - runs on port 1883 (MQTT) and 9001 (WebSocket)
   mqtt-broker:
     image: eclipse-mosquitto:2.0-openssl
