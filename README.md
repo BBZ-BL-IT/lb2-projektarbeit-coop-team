@@ -4,7 +4,7 @@
 
 ## Environment Variables Setup
 
-Copy the .env.example file to .env and modify it with your actual values:
+Copy the .env.example file to the .env and modify it with your actual values:
 
 ```bash
 cp .env.example .env
